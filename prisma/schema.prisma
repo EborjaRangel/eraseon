@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PhotoKind {
+  ANTES
+  DESPUES
+}
+
+model Barda {
+  id          String   @id @default(cuid())
+  consecutivo Int      @unique
+  address     String
+  latitude    Float
+  longitude   Float
+  altoMetros  Float
+  anchoMetros Float
+  areaM2      Float
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  photos      Photo[]
+}
+
+model Photo {
+  id        String    @id @default(cuid())
+  url       String
+  kind      PhotoKind
+  slot      Int
+  bardaId   String
+  barda     Barda     @relation(fields: [bardaId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@unique([bardaId, kind, slot])
+  @@index([bardaId])
+}
