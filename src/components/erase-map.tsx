@@ -39,6 +39,7 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
   const [provider, setProvider] = useState<"mapbox" | "maplibre" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dropReady, setDropReady] = useState(false);
 
   useEffect(() => {
     onPickRef.current = onPick;
@@ -125,11 +126,20 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         const el = balloonElsRef.current.get(pin.id);
         if (!el) continue;
         const point = map.project([pin.longitude, pin.latitude]);
-        const off = point.x < -48 || point.y < -48 || point.x > width + 48 || point.y > height + 48;
+        const x = Math.round(point.x);
+        const y = Math.round(point.y);
+        const off = x < -48 || y < -48 || x > width + 48 || y > height + 48;
         el.style.visibility = off ? "hidden" : "visible";
         el.style.pointerEvents = off ? "none" : "auto";
-        el.style.transform = `translate(${Math.round(point.x)}px, ${Math.round(point.y)}px) translate(-50%, -100%)`;
+        el.style.setProperty("--x", `${x}px`);
+        el.style.setProperty("--y", `${y}px`);
+        if (onPick || el.dataset.landed === "1") {
+          el.style.animation = "none";
+          el.style.opacity = "1";
+          el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+        }
       }
+      if (!onPick) setDropReady(true);
     };
     const onMove = () => {
       if (raf) return;
@@ -148,6 +158,12 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
     };
   }, [pins, mapVersion]);
 
+  const dropOrder = new Map(
+    [...pins]
+      .filter((pin) => pin.id !== "pick")
+      .sort((a, b) => (a.consecutivo ?? 0) - (b.consecutivo ?? 0))
+      .map((pin, index) => [pin.id, index])
+  );
   const selected = bardas.find((barda) => barda.id === selectedId) ?? null;
 
   return (
@@ -174,8 +190,20 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
                     else balloonElsRef.current.delete(pin.id);
                   }}
                   type="button"
-                  className="pointer-events-auto absolute left-0 top-0 flex flex-col items-center"
-                  style={{ zIndex: selectedId === pin.id ? 40 : 10 }}
+                  className={`pointer-events-auto absolute left-0 top-0 flex flex-col items-center ${
+                    onPick ? "" : dropReady ? "erase-pin" : "erase-pin-wait"
+                  }`}
+                  style={{
+                    zIndex: selectedId === pin.id ? 40 : 10 + (pin.consecutivo ?? 0),
+                    animationDelay: onPick ? undefined : `${(dropOrder.get(pin.id) ?? 0) * 180}ms`,
+                  }}
+                  onAnimationEnd={(event) => {
+                    if (event.target !== event.currentTarget) return;
+                    event.currentTarget.dataset.landed = "1";
+                    event.currentTarget.style.animation = "none";
+                    event.currentTarget.style.opacity = "1";
+                    event.currentTarget.style.transform = "translate(var(--x), var(--y)) translate(-50%, -100%)";
+                  }}
                   onClick={(event) => {
                     event.stopPropagation();
                     if (pin.id !== "pick") setSelectedId(pin.id);

@@ -99,3 +99,26 @@ body {
 .maplibregl-map {
   font-family: inherit;
 }
+
+.erase-pin-wait {
+  opacity: 0;
+  transform: translate(var(--x, 0px), -48px) translate(-50%, -100%);
+}
+
+.erase-pin {
+  animation: balloon-fall 0.7s cubic-bezier(0.18, 0.85, 0.28, 1) both;
+}
+
+@keyframes balloon-fall {
+  0% {
+    opacity: 0;
+    transform: translate(var(--x, 0px), -48px) translate(-50%, -100%);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(var(--x, 0px), var(--y, 0px)) translate(-50%, -100%);
+  }
+}
