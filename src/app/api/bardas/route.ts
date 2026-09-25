@@ -10,7 +10,10 @@ export async function GET() {
   const bardas = await prisma.barda.findMany({
     where: ownedBy(user),
     orderBy: { consecutivo: "desc" },
-    include: { photos: true, createdBy: { select: { name: true } } },
+    include: {
+      photos: { select: { id: true, kind: true, slot: true, url: true } },
+      createdBy: { select: { name: true } },
+    },
   });
   return NextResponse.json(bardas);
 }

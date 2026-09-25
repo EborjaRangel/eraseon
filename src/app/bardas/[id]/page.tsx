@@ -16,7 +16,12 @@ export default async function BardaPage({ params }: Props) {
   const { id } = await params;
   const barda = await prisma.barda.findFirst({
     where: { id, ...ownedBy(user) },
-    include: { photos: { orderBy: { slot: "asc" } } },
+    include: {
+      photos: {
+        orderBy: { slot: "asc" },
+        select: { id: true, slot: true, url: true, kind: true },
+      },
+    },
   });
   if (!barda) notFound();
 

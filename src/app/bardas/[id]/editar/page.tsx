@@ -14,7 +14,7 @@ export default async function EditarBardaPage({ params }: Props) {
   const { id } = await params;
   const barda = await prisma.barda.findFirst({
     where: { id, ...ownedBy(user) },
-    include: { photos: true },
+    include: { photos: { select: { id: true, kind: true, slot: true, url: true } } },
   });
   if (!barda) notFound();
 

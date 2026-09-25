@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
-import { removeUpload } from "@/lib/uploads";
 import { ownedBy, requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -12,7 +11,12 @@ export async function GET(_request: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   const barda = await prisma.barda.findFirst({
     where: { id, ...ownedBy(user) },
-    include: { photos: { orderBy: [{ kind: "asc" }, { slot: "asc" }] } },
+    include: {
+      photos: {
+        orderBy: [{ kind: "asc" }, { slot: "asc" }],
+        select: { id: true, url: true, kind: true, slot: true, createdAt: true },
+      },
+    },
   });
   if (!barda) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
   return NextResponse.json(barda);
@@ -62,9 +66,8 @@ export async function DELETE(_request: Request, ctx: Ctx) {
   const { user, error } = await requireUser();
   if (error || !user) return error;
   const { id } = await ctx.params;
-  const barda = await prisma.barda.findFirst({ where: { id, ...ownedBy(user) }, include: { photos: true } });
+  const barda = await prisma.barda.findFirst({ where: { id, ...ownedBy(user) }, select: { id: true } });
   if (!barda) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
-  await Promise.all(barda.photos.map((photo) => removeUpload(photo.url)));
   await prisma.barda.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

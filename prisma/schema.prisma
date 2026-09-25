@@ -50,6 +50,7 @@ model Barda {
 model Photo {
   id        String    @id @default(cuid())
   url       String
+  data      Bytes
   kind      PhotoKind
   slot      Int
   bardaId   String

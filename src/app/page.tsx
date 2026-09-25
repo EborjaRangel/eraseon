@@ -12,7 +12,10 @@ export default async function HomePage() {
   const bardas = await prisma.barda.findMany({
     where: ownedBy(user),
     orderBy: { consecutivo: "desc" },
-    include: { photos: true, createdBy: { select: { name: true } } },
+    include: {
+      photos: { select: { kind: true } },
+      createdBy: { select: { name: true } },
+    },
   });
   const areaTotal = bardas.reduce((sum, barda) => sum + barda.areaM2, 0);
 

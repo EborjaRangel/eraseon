@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { removeUpload, saveUpload } from "@/lib/uploads";
 import { ownedBy, requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -27,15 +26,19 @@ export async function POST(request: Request, ctx: Ctx) {
     return NextResponse.json({ error: "La foto debe ir en un espacio del 1 al 5." }, { status: 400 });
   }
 
-  const previous = await prisma.photo.findUnique({
-    where: { bardaId_kind_slot: { bardaId: id, kind, slot } },
-  });
-  const url = await saveUpload(id, file);
+  const bytes = Buffer.from(await file.arrayBuffer());
+  if (bytes.byteLength > 8 * 1024 * 1024) {
+    return NextResponse.json({ error: "La imagen supera 8 MB." }, { status: 400 });
+  }
   const photo = await prisma.photo.upsert({
     where: { bardaId_kind_slot: { bardaId: id, kind, slot } },
-    create: { bardaId: id, kind, slot, url },
-    update: { url },
+    create: { bardaId: id, kind, slot, url: "pending", data: bytes },
+    update: { data: bytes },
   });
-  if (previous && previous.url !== url) await removeUpload(previous.url);
-  return NextResponse.json(photo);
+  const saved = await prisma.photo.update({
+    where: { id: photo.id },
+    data: { url: `/api/photos/${photo.id}` },
+    select: { id: true, url: true, kind: true, slot: true, bardaId: true, createdAt: true },
+  });
+  return NextResponse.json(saved);
 }
