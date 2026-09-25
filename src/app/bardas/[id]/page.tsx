@@ -74,6 +74,11 @@ export default async function BardaPage({ params }: Props) {
 
       {barda.notes ? <section className="panel text-sm">{barda.notes}</section> : null}
 
+      {barda.photos.length === 0 ? (
+        <section className="panel text-sm">
+          Este registro no tiene fotos guardadas. Entra a editar y vuelve a elegirlas desde la cámara o la galería.
+        </section>
+      ) : null}
       <Gallery title="Antes" photos={antes} />
       <Gallery title="Después" photos={despues} />
     </div>

@@ -29,20 +29,24 @@ type Props = {
 };
 
 async function compress(file: File): Promise<File> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1400 / Math.max(bitmap.width, bitmap.height));
-  const width = Math.max(1, Math.round(bitmap.width * scale));
-  const height = Math.max(1, Math.round(bitmap.height * scale));
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return file;
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.72));
-  bitmap.close();
-  if (!blob) return file;
-  return new File([blob], "foto.jpg", { type: "image/jpeg" });
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.7));
+    bitmap.close();
+    if (!blob) return file;
+    return new File([blob], "foto.jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
 }
 
 export function BardaForm({ mode, bardaId, initial }: Props) {
@@ -160,8 +164,8 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         const fail = await upload.json().catch(() => ({}));
         setSaving(false);
         setStatus(null);
-        setError(fail.error ?? "El registro se guardó, pero una foto no se subió.");
-        router.push(`/bardas/${id}`);
+        setError(fail.error ?? "El registro se guardó, pero una foto no se subió. Vuelve a elegirla.");
+        router.push(`/bardas/${id}/editar`);
         return;
       }
     }
