@@ -4,6 +4,7 @@ import { DeleteBardaButton } from "@/components/delete-barda-button";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser, ownedBy } from "@/lib/session";
+import { contadorGeneral } from "@/lib/area";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,9 @@ export default async function BardaPage({ params }: Props) {
   });
   if (!barda) notFound();
 
+  const general = contadorGeneral(
+    await prisma.barda.findMany({ select: { anchoMetros: true, areaM2: true } })
+  );
   const antes = barda.photos.filter((photo) => photo.kind === "ANTES");
   const despues = barda.photos.filter((photo) => photo.kind === "DESPUES");
 
@@ -44,6 +48,14 @@ export default async function BardaPage({ params }: Props) {
           <DeleteBardaButton id={barda.id} />
         </div>
       </div>
+
+      <section className="panel border-[var(--magic)] bg-violet-50 text-sm">
+        <p className="font-medium text-[var(--magic)]">Contador general</p>
+        <p className="mt-1 text-2xl font-semibold text-[var(--header)]">{formatMetros(general.lineales)} pintados</p>
+        <p className="text-[var(--muted)]">
+          Esta barda aporta {formatMetros(barda.anchoMetros)} y {formatArea(barda.areaM2)}. El total del proyecto es {formatArea(general.area)}.
+        </p>
+      </section>
 
       <section className="grid gap-3 sm:grid-cols-3">
         <article className="panel">

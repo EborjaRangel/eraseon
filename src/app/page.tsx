@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser, ownedBy } from "@/lib/session";
+import { contadorGeneral } from "@/lib/area";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,10 @@ export default async function HomePage() {
       createdBy: { select: { name: true } },
     },
   });
-  const areaTotal = bardas.reduce((sum, barda) => sum + barda.areaM2, 0);
+  const todas = await prisma.barda.findMany({
+    select: { anchoMetros: true, areaM2: true },
+  });
+  const general = contadorGeneral(todas);
 
   return (
     <div className="space-y-6">
@@ -31,14 +35,24 @@ export default async function HomePage() {
         <Link className="btn-primary" href="/bardas/nueva">Registrar barda</Link>
       </div>
 
+      <section className="panel border-[var(--magic)] bg-violet-50">
+        <p className="text-sm font-medium text-[var(--magic)]">Contador general de metros pintados</p>
+        <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">
+          {formatMetros(general.lineales)}
+        </p>
+        <p className="mt-1 text-sm text-[var(--muted)]">
+          {formatArea(general.area)} de área · {general.bardas} {general.bardas === 1 ? "barda" : "bardas"}
+        </p>
+      </section>
+
       <div className="grid gap-3 sm:grid-cols-3">
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Registros</p>
           <p className="text-3xl font-semibold">{bardas.length}</p>
         </article>
         <article className="panel">
-          <p className="text-sm text-[var(--muted)]">Área acumulada</p>
-          <p className="text-3xl font-semibold">{formatArea(Math.round(areaTotal * 100) / 100)}</p>
+          <p className="text-sm text-[var(--muted)]">Área que ves</p>
+          <p className="text-3xl font-semibold">{formatArea(contadorGeneral(bardas).area)}</p>
         </article>
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Último registro</p>
