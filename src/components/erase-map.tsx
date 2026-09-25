@@ -20,7 +20,7 @@ export type MapBarda = {
   despues: number;
 };
 
-type Pin = { id: string; latitude: number; longitude: number; consecutivo?: number; done?: boolean };
+type Pin = { id: string; latitude: number; longitude: number; consecutivo?: number; antes?: number; despues?: number };
 
 type Props = {
   bardas?: MapBarda[];
@@ -53,7 +53,8 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         latitude: barda.latitude,
         longitude: barda.longitude,
         consecutivo: barda.consecutivo,
-        done: barda.despues > 0,
+        antes: barda.antes,
+        despues: barda.despues,
       }));
 
   const start = pick
@@ -156,7 +157,14 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         <div ref={overlayRef} className="pointer-events-none absolute inset-0 z-[5] overflow-hidden">
           {mapVersion > 0 &&
             pins.map((pin) => {
-              const color = pin.id === "pick" ? "#0891b2" : pin.done ? "#6d28d9" : "#ea580c";
+              const color =
+                pin.id === "pick"
+                  ? "#0891b2"
+                  : (pin.despues ?? 0) > 0
+                    ? "#6d28d9"
+                    : (pin.antes ?? 0) > 0
+                      ? "#0f766e"
+                      : "#ea580c";
               const label = pin.consecutivo ?? "+";
               return (
                 <button

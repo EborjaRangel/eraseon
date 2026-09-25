@@ -32,7 +32,7 @@ export default async function MapaPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Mapa</h1>
         <p className="text-sm text-[var(--muted)]">
-          Cada globo muestra el número consecutivo. Violeta si ya hay fotos de después; naranja si todavía no.
+          Cada globo muestra el número consecutivo. Verde si ya hay fotos de antes, violeta si ya hay fotos de después y naranja si todavía no hay fotos.
         </p>
       </div>
       <EraseMapLoader bardas={points} />
