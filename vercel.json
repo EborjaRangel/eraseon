@@ -1,22 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": [
-    "iad1"
-  ],
-  "services": {
-    "web": {
-      "root": ".",
-      "framework": "nextjs",
-      "buildCommand": "npm run build"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": {
-        "type": "service",
-        "service": "web"
-      }
-    }
-  ]
+  "framework": "nextjs",
+  "buildCommand": "npm run build"
 }
