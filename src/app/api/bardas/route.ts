@@ -2,16 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
 import { isUniqueConsecutivoError, nextConsecutivo } from "@/lib/consecutivo";
+import { ownedBy, requireUser } from "@/lib/session";
 
 export async function GET() {
+  const { user, error } = await requireUser();
+  if (error || !user) return error;
   const bardas = await prisma.barda.findMany({
+    where: ownedBy(user),
     orderBy: { consecutivo: "desc" },
-    include: { photos: true },
+    include: { photos: true, createdBy: { select: { name: true } } },
   });
   return NextResponse.json(bardas);
 }
 
 export async function POST(request: Request) {
+  const { user, error } = await requireUser();
+  if (error || !user) return error;
   const body = await request.json().catch(() => null);
   const address = String(body?.address ?? "").trim();
   const notes = String(body?.notes ?? "").trim();
@@ -50,6 +56,7 @@ export async function POST(request: Request) {
             altoMetros,
             anchoMetros,
             areaM2: areaM2(altoMetros, anchoMetros),
+            createdById: user.id,
           },
         });
       });

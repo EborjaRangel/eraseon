@@ -1,10 +1,15 @@
+import { redirect } from "next/navigation";
 import { EraseMapLoader } from "@/components/erase-map-loader";
 import { prisma } from "@/lib/prisma";
+import { currentUser, ownedBy } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function MapaPage() {
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const bardas = await prisma.barda.findMany({
+    where: ownedBy(user),
     orderBy: { consecutivo: "asc" },
     include: { photos: { select: { kind: true } } },
   });

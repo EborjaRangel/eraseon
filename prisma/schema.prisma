@@ -7,9 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  CAPTURISTA
+}
+
 enum PhotoKind {
   ANTES
   DESPUES
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CAPTURISTA)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  bardas    Barda[]
 }
 
 model Barda {
@@ -24,7 +40,11 @@ model Barda {
   notes       String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
   photos      Photo[]
+
+  @@index([createdById])
 }
 
 model Photo {

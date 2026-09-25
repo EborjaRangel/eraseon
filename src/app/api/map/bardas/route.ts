@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ownedBy, requireUser } from "@/lib/session";
 
 export async function GET() {
+  const { user, error } = await requireUser();
+  if (error || !user) return error;
   const bardas = await prisma.barda.findMany({
+    where: ownedBy(user),
     orderBy: { consecutivo: "asc" },
     include: { photos: { select: { kind: true } } },
   });

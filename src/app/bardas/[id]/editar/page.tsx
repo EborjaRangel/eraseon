@@ -1,15 +1,19 @@
 import { notFound } from "next/navigation";
 import { BardaForm } from "@/components/barda-form";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { currentUser, ownedBy } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function EditarBardaPage({ params }: Props) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const { id } = await params;
-  const barda = await prisma.barda.findUnique({
-    where: { id },
+  const barda = await prisma.barda.findFirst({
+    where: { id, ...ownedBy(user) },
     include: { photos: true },
   });
   if (!barda) notFound();

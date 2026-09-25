@@ -2,13 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
 import { removeUpload } from "@/lib/uploads";
+import { ownedBy, requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, ctx: Ctx) {
+  const { user, error } = await requireUser();
+  if (error || !user) return error;
   const { id } = await ctx.params;
-  const barda = await prisma.barda.findUnique({
-    where: { id },
+  const barda = await prisma.barda.findFirst({
+    where: { id, ...ownedBy(user) },
     include: { photos: { orderBy: [{ kind: "asc" }, { slot: "asc" }] } },
   });
   if (!barda) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
@@ -16,8 +19,10 @@ export async function GET(_request: Request, ctx: Ctx) {
 }
 
 export async function PATCH(request: Request, ctx: Ctx) {
+  const { user, error } = await requireUser();
+  if (error || !user) return error;
   const { id } = await ctx.params;
-  const current = await prisma.barda.findUnique({ where: { id } });
+  const current = await prisma.barda.findFirst({ where: { id, ...ownedBy(user) } });
   if (!current) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
 
   const body = await request.json().catch(() => null);
@@ -54,8 +59,10 @@ export async function PATCH(request: Request, ctx: Ctx) {
 }
 
 export async function DELETE(_request: Request, ctx: Ctx) {
+  const { user, error } = await requireUser();
+  if (error || !user) return error;
   const { id } = await ctx.params;
-  const barda = await prisma.barda.findUnique({ where: { id }, include: { photos: true } });
+  const barda = await prisma.barda.findFirst({ where: { id, ...ownedBy(user) }, include: { photos: true } });
   if (!barda) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
   await Promise.all(barda.photos.map((photo) => removeUpload(photo.url)));
   await prisma.barda.delete({ where: { id } });

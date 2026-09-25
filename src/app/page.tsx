@@ -1,13 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { currentUser, ownedBy } from "@/lib/session";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const bardas = await prisma.barda.findMany({
+    where: ownedBy(user),
     orderBy: { consecutivo: "desc" },
-    include: { photos: true },
+    include: { photos: true, createdBy: { select: { name: true } } },
   });
   const areaTotal = bardas.reduce((sum, barda) => sum + barda.areaM2, 0);
 
@@ -16,7 +21,9 @@ export default async function HomePage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Bardas</h1>
-          <p className="text-sm text-[var(--muted)]">Cada registro tiene un consecutivo único, fecha, hora y área.</p>
+          <p className="text-sm text-[var(--muted)]">
+            {user.role === "ADMIN" ? "Ves todas las bardas." : "Solo ves las bardas que tú registraste."}
+          </p>
         </div>
         <Link className="btn-primary" href="/bardas/nueva">Registrar barda</Link>
       </div>

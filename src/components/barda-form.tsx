@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EraseMapLoader } from "@/components/erase-map-loader";
 import { PhotoSlots, type SlotPhoto } from "@/components/photo-slots";
+import { ValidationError } from "yup";
 import { areaM2 } from "@/lib/area";
 import { formatArea, formatRegistro } from "@/lib/format";
+import { bardaSchema } from "@/lib/validations";
 
 const COYOACAN = { latitude: 19.3467, longitude: -99.1617 };
 
@@ -75,6 +77,26 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     };
   }, [mode]);
 
+  useEffect(() => {
+    if (mode !== "create" || initial) return;
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((position) => {
+      setPoint({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+    });
+  }, [mode, initial]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fetch(`/api/geocode?lat=${point.latitude}&lng=${point.longitude}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: { address?: string } | null) => {
+          if (data?.address) setAddress(data.address);
+        })
+        .catch(() => undefined);
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [point.latitude, point.longitude]);
+
   const altoN = Number(alto.replace(",", "."));
   const anchoN = Number(ancho.replace(",", "."));
   const area = Number.isFinite(altoN) && Number.isFinite(anchoN) && altoN > 0 && anchoN > 0 ? areaM2(altoN, anchoN) : null;
@@ -96,9 +118,6 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setSaving(true);
-    setError(null);
-    setStatus("Guardando registro…");
     const payload = {
       address,
       notes,
@@ -107,6 +126,15 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       altoMetros: altoN,
       anchoMetros: anchoN,
     };
+    try {
+      await bardaSchema.validate(payload);
+    } catch (err) {
+      setError(err instanceof ValidationError ? err.message : "Revisa los datos.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    setStatus("Guardando registro…");
     const response = await fetch(mode === "create" ? "/api/bardas" : `/api/bardas/${bardaId}`, {
       method: mode === "create" ? "POST" : "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -172,6 +200,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         <div>
           <label className="label" htmlFor="address">Dirección de la barda</label>
           <input id="address" className="field mt-1" value={address} onChange={(e) => setAddress(e.target.value)} required />
+          <p className="mt-1 text-xs text-[var(--muted)]">Se actualiza al mover el globo en Mapbox.</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
@@ -199,7 +228,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="section-title">Ubicación</h2>
-            <p className="text-sm text-[var(--muted)]">Toca el mapa o arrastra el globo. También puedes usar el GPS.</p>
+            <p className="text-sm text-[var(--muted)]">Al abrir el registro se usa el GPS del dispositivo. Mueve el globo si hay que corregir el punto.</p>
           </div>
           <button type="button" className="btn-secondary" onClick={useGps}>Usar mi ubicación</button>
         </div>

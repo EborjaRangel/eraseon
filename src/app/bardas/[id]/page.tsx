@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteBardaButton } from "@/components/delete-barda-button";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { currentUser, ownedBy } from "@/lib/session";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -9,9 +11,11 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ id: string }> };
 
 export default async function BardaPage({ params }: Props) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const { id } = await params;
-  const barda = await prisma.barda.findUnique({
-    where: { id },
+  const barda = await prisma.barda.findFirst({
+    where: { id, ...ownedBy(user) },
     include: { photos: { orderBy: { slot: "asc" } } },
   });
   if (!barda) notFound();
