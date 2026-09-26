@@ -23,8 +23,8 @@ export async function POST(request: Request, ctx: Ctx) {
     return NextResponse.json({ error: "El tipo de foto no es válido." }, { status: 400 });
   }
   if (kind === "PERMISO") {
-    if (barda.tipo !== "PRIVADA" && !barda.permisoFirmado) {
-      return NextResponse.json({ error: "Esta barda pública no lleva foto de permiso firmado." }, { status: 400 });
+    if (!barda.permisoFirmado) {
+      return NextResponse.json({ error: "Este registro no lleva foto de permiso firmado." }, { status: 400 });
     }
     if (slot !== 1) {
       return NextResponse.json({ error: "El permiso firmado ocupa un solo espacio." }, { status: 400 });

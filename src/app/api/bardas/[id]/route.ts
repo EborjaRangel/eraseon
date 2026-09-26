@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
+import { permisoFirmadoDe } from "@/lib/permiso";
 import { ownedBy, requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -33,7 +34,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
   const address = String(body?.address ?? current.address).trim();
   const notes = String(body?.notes ?? current.notes).trim();
   const tipo = body?.tipo === "PRIVADA" || body?.tipo === "PUBLICA" ? body.tipo : current.tipo;
-  const permisoFirmado = tipo === "PUBLICA" && body?.permisoFirmado === true;
+  const permisoFirmado = permisoFirmadoDe(tipo, body?.permisoFirmado);
   const latitude = Number(body?.latitude ?? current.latitude);
   const longitude = Number(body?.longitude ?? current.longitude);
   const altoMetros = parseMeters(body?.altoMetros ?? current.altoMetros);
@@ -49,19 +50,25 @@ export async function PATCH(request: Request, ctx: Ctx) {
     );
   }
 
-  const barda = await prisma.barda.update({
-    where: { id },
-    data: {
-      address,
-      notes,
-      tipo,
-      permisoFirmado,
-      latitude,
-      longitude,
-      altoMetros,
-      anchoMetros,
-      areaM2: areaM2(altoMetros, anchoMetros),
-    },
+  const barda = await prisma.$transaction(async (tx) => {
+    const updated = await tx.barda.update({
+      where: { id },
+      data: {
+        address,
+        notes,
+        tipo,
+        permisoFirmado,
+        latitude,
+        longitude,
+        altoMetros,
+        anchoMetros,
+        areaM2: areaM2(altoMetros, anchoMetros),
+      },
+    });
+    if (!permisoFirmado) {
+      await tx.photo.deleteMany({ where: { bardaId: id, kind: "PERMISO" } });
+    }
+    return updated;
   });
   return NextResponse.json(barda);
 }

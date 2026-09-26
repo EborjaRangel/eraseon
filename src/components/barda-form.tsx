@@ -131,7 +131,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       address,
       notes,
       tipo,
-      permisoFirmado: tipo === "PUBLICA" && permisoFirmado,
+      permisoFirmado: tipo === "PRIVADA" || permisoFirmado,
       latitude: point.latitude,
       longitude: point.longitude,
       altoMetros: altoN,

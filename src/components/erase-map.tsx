@@ -17,6 +17,7 @@ export type MapBarda = {
   areaM2: number;
   createdAt: string;
   tipo: "PUBLICA" | "PRIVADA";
+  permisoFirmado: boolean;
   antes: number;
   despues: number;
 };
@@ -240,7 +241,10 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
             <p className="font-semibold">
               {formatRegistro(selected.consecutivo)} · globo {selected.consecutivo}
             </p>
-            <p>{selected.tipo === "PRIVADA" ? "Barda privada" : "Barda pública"}</p>
+            <p>
+              {selected.tipo === "PRIVADA" ? "Barda privada" : "Barda pública"}
+              {` · Permiso firmado: ${selected.permisoFirmado ? "sí" : "no"}`}
+            </p>
           <p>{selected.address}</p>
           <p>
             {formatMetros(selected.altoMetros)} × {formatMetros(selected.anchoMetros)} = {formatArea(selected.areaM2)}

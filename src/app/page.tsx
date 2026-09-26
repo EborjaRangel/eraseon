@@ -71,6 +71,7 @@ export default async function HomePage() {
               <tr>
                 <th className="px-4 py-3 font-medium">Registro</th>
                 <th className="px-4 py-3 font-medium">Dirección</th>
+                <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Medidas</th>
                 <th className="px-4 py-3 font-medium">Fecha</th>
                 <th className="px-4 py-3 font-medium">Fotos</th>
@@ -89,6 +90,10 @@ export default async function HomePage() {
                       <p className="text-xs text-[var(--muted)]">Globo {barda.consecutivo}</p>
                     </td>
                     <td className="px-4 py-3">{barda.address}</td>
+                    <td className="px-4 py-3">
+                      {barda.tipo === "PRIVADA" ? "Privada" : "Pública"}
+                      <p className="text-xs text-[var(--muted)]">Permiso {barda.permisoFirmado ? "sí" : "no"}</p>
+                    </td>
                     <td className="px-4 py-3">
                       {formatMetros(barda.altoMetros)} × {formatMetros(barda.anchoMetros)}
                       <p className="font-medium">{formatArea(barda.areaM2)}</p>

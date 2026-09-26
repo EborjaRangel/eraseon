@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
 import { isUniqueConsecutivoError, nextConsecutivo } from "@/lib/consecutivo";
+import { permisoFirmadoDe } from "@/lib/permiso";
 import { ownedBy, requireUser } from "@/lib/session";
 
 export async function GET() {
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   const address = String(body?.address ?? "").trim();
   const notes = String(body?.notes ?? "").trim();
   const tipo = body?.tipo === "PRIVADA" ? "PRIVADA" : "PUBLICA";
-  const permisoFirmado = tipo === "PUBLICA" && body?.permisoFirmado === true;
+  const permisoFirmado = permisoFirmadoDe(tipo, body?.permisoFirmado);
   const latitude = Number(body?.latitude);
   const longitude = Number(body?.longitude);
   const altoMetros = parseMeters(body?.altoMetros);

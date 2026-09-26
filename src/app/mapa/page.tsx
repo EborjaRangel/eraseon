@@ -24,6 +24,7 @@ export default async function MapaPage() {
     areaM2: barda.areaM2,
     createdAt: barda.createdAt.toISOString(),
     tipo: barda.tipo,
+    permisoFirmado: barda.permisoFirmado,
     antes: barda.photos.filter((photo) => photo.kind === "ANTES").length,
     despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
   }));

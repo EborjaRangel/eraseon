@@ -21,6 +21,8 @@ export async function GET() {
       anchoMetros: barda.anchoMetros,
       areaM2: barda.areaM2,
       createdAt: barda.createdAt,
+      tipo: barda.tipo,
+      permisoFirmado: barda.permisoFirmado,
       antes: barda.photos.filter((photo) => photo.kind === "ANTES").length,
       despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
     }))
