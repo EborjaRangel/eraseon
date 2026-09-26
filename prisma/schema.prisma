@@ -43,8 +43,9 @@ model Barda {
   altoMetros  Float
   anchoMetros Float
   areaM2      Float
-  tipo        TipoBarda @default(PUBLICA)
-  notes       String    @default("")
+  tipo           TipoBarda @default(PUBLICA)
+  permisoFirmado Boolean   @default(false)
+  notes          String    @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdById String

@@ -21,6 +21,7 @@ type Props = {
     address: string;
     notes: string;
     tipo: "PUBLICA" | "PRIVADA";
+    permisoFirmado: boolean;
     latitude: number;
     longitude: number;
     altoMetros: number;
@@ -56,6 +57,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const [address, setAddress] = useState(initial?.address ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [tipo, setTipo] = useState<"PUBLICA" | "PRIVADA">(initial?.tipo ?? "PUBLICA");
+  const [permisoFirmado, setPermisoFirmado] = useState(initial?.permisoFirmado ?? false);
   const [alto, setAlto] = useState(initial ? String(initial.altoMetros) : "");
   const [ancho, setAncho] = useState(initial ? String(initial.anchoMetros) : "");
   const [point, setPoint] = useState(
@@ -129,6 +131,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       address,
       notes,
       tipo,
+      permisoFirmado: tipo === "PUBLICA" && permisoFirmado,
       latitude: point.latitude,
       longitude: point.longitude,
       altoMetros: altoN,
@@ -156,7 +159,8 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       return;
     }
     const id = data.id as string;
-    const toUpload = tipo === "PRIVADA" ? drafts : drafts.filter((draft) => draft.kind !== "PERMISO");
+    const pidePermiso = tipo === "PRIVADA" || permisoFirmado;
+    const toUpload = pidePermiso ? drafts : drafts.filter((draft) => draft.kind !== "PERMISO");
     for (const draft of toUpload) {
       const etiqueta =
         draft.kind === "PERMISO" ? "del permiso firmado" : `${draft.slot} de ${draft.kind === "ANTES" ? "antes" : "después"}`;
@@ -198,6 +202,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const despues = initial?.photos.filter((photo) => photo.kind === "DESPUES") ?? [];
   const permisoGuardado = initial?.photos.find((photo) => photo.kind === "PERMISO")?.url;
   const permisoPreview = pending.PERMISO[1] ?? permisoGuardado;
+  const muestraPermiso = tipo === "PRIVADA" || permisoFirmado;
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -231,14 +236,30 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
             </p>
           </div>
         </div>
-        <div>
-          <label className="label" htmlFor="tipo">Tipo de barda</label>
-          <select id="tipo" className="field mt-1" value={tipo} onChange={(e) => setTipo(e.target.value as "PUBLICA" | "PRIVADA")}>
-            <option value="PUBLICA">Barda pública</option>
-            <option value="PRIVADA">Barda privada</option>
-          </select>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="tipo">Tipo de barda</label>
+            <select id="tipo" className="field mt-1" value={tipo} onChange={(e) => setTipo(e.target.value as "PUBLICA" | "PRIVADA")}>
+              <option value="PUBLICA">Barda pública</option>
+              <option value="PRIVADA">Barda privada</option>
+            </select>
+          </div>
+          {tipo === "PUBLICA" ? (
+            <div>
+              <label className="label" htmlFor="permiso">Permiso firmado</label>
+              <select
+                id="permiso"
+                className="field mt-1"
+                value={permisoFirmado ? "SI" : "NO"}
+                onChange={(e) => setPermisoFirmado(e.target.value === "SI")}
+              >
+                <option value="NO">No</option>
+                <option value="SI">Sí</option>
+              </select>
+            </div>
+          ) : null}
         </div>
-        {tipo === "PRIVADA" ? <PermisoFoto preview={permisoPreview} onPick={(file) => onPick("PERMISO", 1, file)} /> : null}
+        {muestraPermiso ? <PermisoFoto preview={permisoPreview} onPick={(file) => onPick("PERMISO", 1, file)} /> : null}
         <div>
           <label className="label" htmlFor="notes">Notas</label>
           <textarea id="notes" className="field mt-1 min-h-24" value={notes} onChange={(e) => setNotes(e.target.value)} />

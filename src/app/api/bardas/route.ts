@@ -25,6 +25,7 @@ export async function POST(request: Request) {
   const address = String(body?.address ?? "").trim();
   const notes = String(body?.notes ?? "").trim();
   const tipo = body?.tipo === "PRIVADA" ? "PRIVADA" : "PUBLICA";
+  const permisoFirmado = tipo === "PUBLICA" && body?.permisoFirmado === true;
   const latitude = Number(body?.latitude);
   const longitude = Number(body?.longitude);
   const altoMetros = parseMeters(body?.altoMetros);
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
             address,
             notes,
             tipo,
+            permisoFirmado,
             latitude,
             longitude,
             altoMetros,

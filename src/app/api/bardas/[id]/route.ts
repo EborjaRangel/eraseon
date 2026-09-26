@@ -33,6 +33,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
   const address = String(body?.address ?? current.address).trim();
   const notes = String(body?.notes ?? current.notes).trim();
   const tipo = body?.tipo === "PRIVADA" || body?.tipo === "PUBLICA" ? body.tipo : current.tipo;
+  const permisoFirmado = tipo === "PUBLICA" && body?.permisoFirmado === true;
   const latitude = Number(body?.latitude ?? current.latitude);
   const longitude = Number(body?.longitude ?? current.longitude);
   const altoMetros = parseMeters(body?.altoMetros ?? current.altoMetros);
@@ -54,6 +55,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
       address,
       notes,
       tipo,
+      permisoFirmado,
       latitude,
       longitude,
       altoMetros,

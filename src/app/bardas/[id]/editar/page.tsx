@@ -28,6 +28,7 @@ export default async function EditarBardaPage({ params }: Props) {
           address: barda.address,
           notes: barda.notes,
           tipo: barda.tipo,
+          permisoFirmado: barda.permisoFirmado,
           latitude: barda.latitude,
           longitude: barda.longitude,
           altoMetros: barda.altoMetros,

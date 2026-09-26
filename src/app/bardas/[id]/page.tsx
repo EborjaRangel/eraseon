@@ -42,7 +42,10 @@ export default async function BardaPage({ params }: Props) {
             {formatRegistro(barda.consecutivo)}
           </h1>
           <p className="mt-1">{barda.address}</p>
-          <p className="text-sm font-medium">{barda.tipo === "PRIVADA" ? "Barda privada" : "Barda pública"}</p>
+          <p className="text-sm font-medium">
+            {barda.tipo === "PRIVADA" ? "Barda privada" : "Barda pública"}
+            {barda.tipo === "PUBLICA" ? ` · Permiso firmado: ${barda.permisoFirmado ? "sí" : "no"}` : null}
+          </p>
           <p className="text-sm text-[var(--muted)]">Registrada el {formatFechaHora(barda.createdAt)}</p>
         </div>
         <div className="flex gap-2">
@@ -74,7 +77,7 @@ export default async function BardaPage({ params }: Props) {
         </article>
       </section>
 
-      {barda.tipo === "PRIVADA" ? (
+      {barda.tipo === "PRIVADA" || barda.permisoFirmado ? (
         <section className="panel">
           <h2 className="section-title">Permiso firmado</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">Dueño o representante legal de la barda.</p>
