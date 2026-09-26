@@ -37,7 +37,31 @@ export function PhotoSlots({ title, hint, kind, photos, pending = {}, onPick }: 
   );
 }
 
-function Slot({ slot, preview, onFile }: { slot: number; preview?: string; onFile: (file: File) => void }) {
+export function PermisoFoto({ preview, onPick }: { preview?: string; onPick: (file: File) => void }) {
+  return (
+    <div>
+      <p className="label">Permiso firmado</p>
+      <p className="mt-1 text-xs text-[var(--muted)]">
+        Foto del permiso firmado por el dueño o el representante legal de la barda.
+      </p>
+      <div className="mt-2 max-w-[11rem]">
+        <Slot slot={1} preview={preview} emptyLabel="Permiso" onFile={onPick} />
+      </div>
+    </div>
+  );
+}
+
+function Slot({
+  slot,
+  preview,
+  onFile,
+  emptyLabel,
+}: {
+  slot: number;
+  preview?: string;
+  onFile: (file: File) => void;
+  emptyLabel?: string;
+}) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   return (
@@ -47,7 +71,7 @@ function Slot({ slot, preview, onFile }: { slot: number; preview?: string; onFil
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt={`Foto ${slot}`} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
-          <span>Foto {slot}</span>
+          <span>{emptyLabel ?? `Foto ${slot}`}</span>
         )}
         <span className="absolute bottom-1 left-1 rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--ink)]">
           {slot}

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EraseMapLoader } from "@/components/erase-map-loader";
-import { PhotoSlots, type SlotPhoto } from "@/components/photo-slots";
+import { PermisoFoto, PhotoSlots, type SlotPhoto } from "@/components/photo-slots";
 import { ValidationError } from "yup";
 import { areaM2 } from "@/lib/area";
 import { formatArea, formatRegistro } from "@/lib/format";
@@ -11,7 +11,8 @@ import { bardaSchema } from "@/lib/validations";
 
 const COYOACAN = { latitude: 19.3467, longitude: -99.1617 };
 
-type Draft = { kind: "ANTES" | "DESPUES"; slot: number; file: File; preview: string };
+type PhotoKind = "ANTES" | "DESPUES" | "PERMISO";
+type Draft = { kind: PhotoKind; slot: number; file: File; preview: string };
 
 type Props = {
   mode: "create" | "edit";
@@ -25,7 +26,7 @@ type Props = {
     altoMetros: number;
     anchoMetros: number;
     consecutivo: number;
-    photos: Array<SlotPhoto & { kind: "ANTES" | "DESPUES" }>;
+    photos: Array<SlotPhoto & { kind: PhotoKind }>;
   };
 };
 
@@ -108,12 +109,12 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const area = Number.isFinite(altoN) && Number.isFinite(anchoN) && altoN > 0 && anchoN > 0 ? areaM2(altoN, anchoN) : null;
 
   const pending = useMemo(() => {
-    const map: Record<"ANTES" | "DESPUES", Record<number, string>> = { ANTES: {}, DESPUES: {} };
+    const map: Record<PhotoKind, Record<number, string>> = { ANTES: {}, DESPUES: {}, PERMISO: {} };
     for (const draft of drafts) map[draft.kind][draft.slot] = draft.preview;
     return map;
   }, [drafts]);
 
-  async function onPick(kind: "ANTES" | "DESPUES", slot: number, file: File) {
+  async function onPick(kind: PhotoKind, slot: number, file: File) {
     const preview = URL.createObjectURL(file);
     setDrafts((current) => {
       const previous = current.find((item) => item.kind === kind && item.slot === slot);
@@ -155,8 +156,11 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       return;
     }
     const id = data.id as string;
-    for (const draft of drafts) {
-      setStatus(`Subiendo foto ${draft.slot} de ${draft.kind === "ANTES" ? "antes" : "después"}…`);
+    const toUpload = tipo === "PRIVADA" ? drafts : drafts.filter((draft) => draft.kind !== "PERMISO");
+    for (const draft of toUpload) {
+      const etiqueta =
+        draft.kind === "PERMISO" ? "del permiso firmado" : `${draft.slot} de ${draft.kind === "ANTES" ? "antes" : "después"}`;
+      setStatus(`Subiendo foto ${etiqueta}…`);
       const image = await compress(draft.file);
       const form = new FormData();
       form.set("file", image);
@@ -192,6 +196,8 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
 
   const antes = initial?.photos.filter((photo) => photo.kind === "ANTES") ?? [];
   const despues = initial?.photos.filter((photo) => photo.kind === "DESPUES") ?? [];
+  const permisoGuardado = initial?.photos.find((photo) => photo.kind === "PERMISO")?.url;
+  const permisoPreview = pending.PERMISO[1] ?? permisoGuardado;
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -232,6 +238,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
             <option value="PRIVADA">Barda privada</option>
           </select>
         </div>
+        {tipo === "PRIVADA" ? <PermisoFoto preview={permisoPreview} onPick={(file) => onPick("PERMISO", 1, file)} /> : null}
         <div>
           <label className="label" htmlFor="notes">Notas</label>
           <textarea id="notes" className="field mt-1 min-h-24" value={notes} onChange={(e) => setNotes(e.target.value)} />

@@ -31,6 +31,7 @@ export default async function BardaPage({ params }: Props) {
   );
   const antes = barda.photos.filter((photo) => photo.kind === "ANTES");
   const despues = barda.photos.filter((photo) => photo.kind === "DESPUES");
+  const permiso = barda.photos.find((photo) => photo.kind === "PERMISO");
 
   return (
     <div className="space-y-4">
@@ -73,9 +74,22 @@ export default async function BardaPage({ params }: Props) {
         </article>
       </section>
 
+      {barda.tipo === "PRIVADA" ? (
+        <section className="panel">
+          <h2 className="section-title">Permiso firmado</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">Dueño o representante legal de la barda.</p>
+          {permiso ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={permiso.url} alt="Permiso firmado" className="mt-3 max-h-96 rounded-xl object-contain" />
+          ) : (
+            <p className="mt-3 text-sm">Aún no hay foto del permiso firmado.</p>
+          )}
+        </section>
+      ) : null}
+
       {barda.notes ? <section className="panel text-sm">{barda.notes}</section> : null}
 
-      {barda.photos.length === 0 ? (
+      {antes.length + despues.length === 0 ? (
         <section className="panel text-sm">
           Este registro no tiene fotos guardadas. Entra a editar y vuelve a elegirlas desde la cámara o la galería.
         </section>

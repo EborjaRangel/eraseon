@@ -15,6 +15,7 @@ enum Role {
 enum PhotoKind {
   ANTES
   DESPUES
+  PERMISO
 }
 
 enum TipoBarda {
