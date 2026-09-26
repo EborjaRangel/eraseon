@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm run build"
+buildCommand = "npx prisma generate && npx next build"
 
 [deploy]
 preDeployCommand = "npm run db:deploy"
