@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { showAlcaldiaCoyoacan } from "@/lib/coyoacan-map";
 import { initBasemap, type AnyMap } from "@/lib/init-map";
 import { CENTRO_COYOACAN } from "@/lib/mapbox-config";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
@@ -84,7 +85,9 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         mapRef.current = map;
         setProvider(usedProvider);
         if (usedProvider === "mapbox") setError(null);
-        setMapVersion((value) => value + 1);
+        void showAlcaldiaCoyoacan(map, !onPickRef.current).finally(() => {
+          if (!cancelled) setMapVersion((value) => value + 1);
+        });
         if (onPickRef.current) {
           map.on("click", (event: unknown) => {
             const lngLat = (event as { lngLat?: { lng: number; lat: number } }).lngLat;
@@ -233,7 +236,8 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         ) : null}
       </div>
       <p className="text-xs text-[var(--muted)]">
-        {provider === "mapbox" ? "Mapbox" : provider === "maplibre" ? "Mapa alterno" : "Mapa"}
+        Alcaldía Coyoacán
+        {provider === "mapbox" ? " · Mapbox" : provider === "maplibre" ? " · Mapa alterno" : ""}
         {error ? ` · ${error}` : ""}
       </p>
       {selected ? (

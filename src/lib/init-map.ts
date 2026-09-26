@@ -12,6 +12,10 @@ export type AnyMap = {
   isStyleLoaded: () => boolean;
   project: (lngLat: [number, number]) => { x: number; y: number };
   addControl: (control: unknown, position?: string) => void;
+  getSource: (id: string) => unknown;
+  addSource: (id: string, source: unknown) => void;
+  addLayer: (layer: unknown) => void;
+  fitBounds: (bounds: [[number, number], [number, number]], options?: unknown) => void;
 };
 
 type RawMap = MapboxMap | MapLibreMap;
