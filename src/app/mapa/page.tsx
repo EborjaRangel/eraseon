@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { EraseMapLoader } from "@/components/erase-map-loader";
+import { MapaFiltro } from "@/components/mapa-filtro";
 import { prisma } from "@/lib/prisma";
 import { currentUser, ownedBy } from "@/lib/session";
 
@@ -23,6 +23,7 @@ export default async function MapaPage() {
     anchoMetros: barda.anchoMetros,
     areaM2: barda.areaM2,
     createdAt: barda.createdAt.toISOString(),
+    tipo: barda.tipo,
     antes: barda.photos.filter((photo) => photo.kind === "ANTES").length,
     despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
   }));
@@ -35,7 +36,7 @@ export default async function MapaPage() {
           Cada globo muestra el número consecutivo. Verde si ya hay fotos de antes, violeta si ya hay fotos de después y naranja si todavía no hay fotos.
         </p>
       </div>
-      <EraseMapLoader bardas={points} />
+      <MapaFiltro bardas={points} />
     </div>
   );
 }
