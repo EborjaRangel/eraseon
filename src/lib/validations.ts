@@ -21,6 +21,13 @@ export const bardaSchema = yup.object({
     .required("Captura el ancho en metros."),
 });
 
+export const usuarioSchema = yup.object({
+  name: yup.string().trim().min(2, "Escribe el nombre.").required("Escribe el nombre."),
+  email: yup.string().trim().email("Correo inválido.").required("Escribe el correo."),
+  password: yup.string().min(4, "La contraseña debe tener al menos 4 caracteres.").required("Escribe la contraseña."),
+  role: yup.string().oneOf(["USUARIO", "ADMIN"], "Elige Usuario o Admin.").required(),
+});
+
 export const loginSchema = yup.object({
   email: yup.string().trim().email("Correo inválido.").required("Escribe el correo."),
   password: yup.string().min(4, "La contraseña es muy corta.").required("Escribe la contraseña."),

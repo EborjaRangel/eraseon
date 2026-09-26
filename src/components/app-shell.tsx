@@ -26,12 +26,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <nav className="flex flex-wrap items-center gap-2 text-sm">
             <Link className="rounded-lg px-3 py-2 hover:bg-white/10" href="/mapa">Mapa</Link>
+            {user?.role === "ADMIN" ? (
+              <Link className="rounded-lg px-3 py-2 hover:bg-white/10" href="/usuarios">Usuarios</Link>
+            ) : null}
             <Link className="rounded-lg bg-cyan-400 px-3 py-2 font-medium text-[var(--header)]" href="/bardas/nueva">
               Nueva barda
             </Link>
             {user ? (
               <button type="button" className="rounded-lg px-3 py-2 hover:bg-white/10" onClick={() => signOut({ callbackUrl: "/login" })}>
-                {user.role === "ADMIN" ? "Admin" : "Capturista"} · Salir
+                {user.role === "ADMIN" ? "Admin" : "Usuario"} · Salir
               </button>
             ) : null}
           </nav>

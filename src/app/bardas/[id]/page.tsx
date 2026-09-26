@@ -50,7 +50,7 @@ export default async function BardaPage({ params }: Props) {
         </div>
         <div className="flex gap-2">
           <Link className="btn-secondary" href={`/bardas/${barda.id}/editar`}>Editar</Link>
-          <DeleteBardaButton id={barda.id} />
+          {user.role === "ADMIN" ? <DeleteBardaButton id={barda.id} /> : null}
         </div>
       </div>
 

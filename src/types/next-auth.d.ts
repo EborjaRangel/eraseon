@@ -6,19 +6,19 @@ declare module "next-auth" {
       id: string;
       name?: string | null;
       email?: string | null;
-      role: "ADMIN" | "CAPTURISTA";
+      role: "ADMIN" | "USUARIO";
     };
   }
 
   interface User {
     id: string;
-    role: "ADMIN" | "CAPTURISTA";
+    role: "ADMIN" | "USUARIO";
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
-    role: "ADMIN" | "CAPTURISTA";
+    role: "ADMIN" | "USUARIO";
   }
 }
