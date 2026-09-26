@@ -17,6 +17,11 @@ enum PhotoKind {
   DESPUES
 }
 
+enum TipoBarda {
+  PUBLICA
+  PRIVADA
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -37,7 +42,8 @@ model Barda {
   altoMetros  Float
   anchoMetros Float
   areaM2      Float
-  notes       String   @default("")
+  tipo        TipoBarda @default(PUBLICA)
+  notes       String    @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdById String

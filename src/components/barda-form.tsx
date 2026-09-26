@@ -19,6 +19,7 @@ type Props = {
   initial?: {
     address: string;
     notes: string;
+    tipo: "PUBLICA" | "PRIVADA";
     latitude: number;
     longitude: number;
     altoMetros: number;
@@ -53,6 +54,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const router = useRouter();
   const [address, setAddress] = useState(initial?.address ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [tipo, setTipo] = useState<"PUBLICA" | "PRIVADA">(initial?.tipo ?? "PUBLICA");
   const [alto, setAlto] = useState(initial ? String(initial.altoMetros) : "");
   const [ancho, setAncho] = useState(initial ? String(initial.anchoMetros) : "");
   const [point, setPoint] = useState(
@@ -125,6 +127,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     const payload = {
       address,
       notes,
+      tipo,
       latitude: point.latitude,
       longitude: point.longitude,
       altoMetros: altoN,
@@ -221,6 +224,13 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
               {area == null ? "—" : formatArea(area)}
             </p>
           </div>
+        </div>
+        <div>
+          <label className="label" htmlFor="tipo">Tipo de barda</label>
+          <select id="tipo" className="field mt-1" value={tipo} onChange={(e) => setTipo(e.target.value as "PUBLICA" | "PRIVADA")}>
+            <option value="PUBLICA">Barda pública</option>
+            <option value="PRIVADA">Barda privada</option>
+          </select>
         </div>
         <div>
           <label className="label" htmlFor="notes">Notas</label>

@@ -32,6 +32,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
   const body = await request.json().catch(() => null);
   const address = String(body?.address ?? current.address).trim();
   const notes = String(body?.notes ?? current.notes).trim();
+  const tipo = body?.tipo === "PRIVADA" || body?.tipo === "PUBLICA" ? body.tipo : current.tipo;
   const latitude = Number(body?.latitude ?? current.latitude);
   const longitude = Number(body?.longitude ?? current.longitude);
   const altoMetros = parseMeters(body?.altoMetros ?? current.altoMetros);
@@ -52,6 +53,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
     data: {
       address,
       notes,
+      tipo,
       latitude,
       longitude,
       altoMetros,

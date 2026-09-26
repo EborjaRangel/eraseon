@@ -41,6 +41,7 @@ export default async function BardaPage({ params }: Props) {
             {formatRegistro(barda.consecutivo)}
           </h1>
           <p className="mt-1">{barda.address}</p>
+          <p className="text-sm font-medium">{barda.tipo === "PRIVADA" ? "Barda privada" : "Barda pública"}</p>
           <p className="text-sm text-[var(--muted)]">Registrada el {formatFechaHora(barda.createdAt)}</p>
         </div>
         <div className="flex gap-2">
