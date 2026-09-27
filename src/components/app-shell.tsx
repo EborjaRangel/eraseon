@@ -25,7 +25,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
           <nav className="flex flex-wrap items-center gap-2 text-sm">
-            <Link className="rounded-lg px-3 py-2 hover:bg-white/10" href="/mapa">Mapa</Link>
+            <Link
+              className={`rounded-lg px-3 py-2 hover:bg-white/10 ${pathname === "/" ? "bg-white/15" : ""}`}
+              href="/"
+            >
+              Registros
+            </Link>
+            <Link
+              className={`rounded-lg px-3 py-2 hover:bg-white/10 ${pathname === "/mapa" ? "bg-white/15" : ""}`}
+              href="/mapa"
+            >
+              Mapa
+            </Link>
             {user?.role === "ADMIN" ? (
               <Link className="rounded-lg px-3 py-2 hover:bg-white/10" href="/usuarios">Usuarios</Link>
             ) : null}

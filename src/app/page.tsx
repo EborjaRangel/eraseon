@@ -27,7 +27,7 @@ export default async function HomePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Bardas</h1>
+          <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Registros</h1>
           <p className="text-sm text-[var(--muted)]">
             {user.role === "ADMIN" ? "Ves todas las bardas." : "Solo ves las bardas que tú registraste."}
           </p>
