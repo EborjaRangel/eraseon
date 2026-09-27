@@ -51,8 +51,8 @@ export default async function HomePage() {
           <p className="text-3xl font-semibold">{bardas.length}</p>
         </article>
         <article className="panel">
-          <p className="text-sm text-[var(--muted)]">Área que ves</p>
-          <p className="text-3xl font-semibold">{formatArea(contadorGeneral(bardas).area)}</p>
+          <p className="text-sm text-[var(--muted)]">Total de metros de todos los registros</p>
+          <p className="text-3xl font-semibold">{formatMetros(general.lineales)}</p>
         </article>
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Último registro</p>
