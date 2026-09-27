@@ -70,6 +70,7 @@ export default async function HomePage() {
             <thead className="bg-[var(--surface-2)] text-[var(--muted)]">
               <tr>
                 <th className="px-4 py-3 font-medium">Registro</th>
+                <th className="px-4 py-3 font-medium">Usuario</th>
                 <th className="px-4 py-3 font-medium">Dirección</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Medidas</th>
@@ -89,6 +90,7 @@ export default async function HomePage() {
                       </Link>
                       <p className="text-xs text-[var(--muted)]">Globo {barda.consecutivo}</p>
                     </td>
+                    <td className="px-4 py-3">{barda.createdBy.name}</td>
                     <td className="px-4 py-3">{barda.address}</td>
                     <td className="px-4 py-3">
                       {barda.tipo === "PRIVADA" ? "Privada" : "Pública"}
