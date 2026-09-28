@@ -4,8 +4,7 @@ import { DeleteBardaButton } from "@/components/delete-barda-button";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser, ownedBy } from "@/lib/session";
-import { contadorGeneral } from "@/lib/area";
-import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
+import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -26,9 +25,6 @@ export default async function BardaPage({ params }: Props) {
   });
   if (!barda) notFound();
 
-  const general = contadorGeneral(
-    await prisma.barda.findMany({ select: { anchoMetros: true, areaM2: true } })
-  );
   const antes = barda.photos.filter((photo) => photo.kind === "ANTES");
   const despues = barda.photos.filter((photo) => photo.kind === "DESPUES");
   const permiso = barda.photos.find((photo) => photo.kind === "PERMISO");
@@ -55,24 +51,8 @@ export default async function BardaPage({ params }: Props) {
       </div>
 
       <section className="panel border-[var(--magic)] bg-violet-50 text-sm">
-        <p className="font-medium text-[var(--magic)]">Metros cuadrados totales</p>
-        <p className="mt-1 text-2xl font-semibold text-[var(--header)]">{formatArea(general.area)}</p>
-        <p className="text-[var(--muted)]">Esta barda aporta {formatArea(barda.areaM2)}.</p>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-3">
-        <article className="panel">
-          <p className="text-sm text-[var(--muted)]">Alto</p>
-          <p className="text-2xl font-semibold">{formatMetros(barda.altoMetros)}</p>
-        </article>
-        <article className="panel">
-          <p className="text-sm text-[var(--muted)]">Ancho</p>
-          <p className="text-2xl font-semibold">{formatMetros(barda.anchoMetros)}</p>
-        </article>
-        <article className="panel">
-          <p className="text-sm text-[var(--muted)]">Área</p>
-          <p className="text-2xl font-semibold text-[var(--brush)]">{formatArea(barda.areaM2)}</p>
-        </article>
+        <p className="font-medium text-[var(--magic)]">Metros cuadrados</p>
+        <p className="mt-1 text-2xl font-semibold text-[var(--header)]">{formatArea(barda.areaM2)}</p>
       </section>
 
       {barda.permisoFirmado ? (

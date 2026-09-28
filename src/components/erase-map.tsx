@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { showAlcaldiaCoyoacan } from "@/lib/coyoacan-map";
 import { initBasemap, type AnyMap } from "@/lib/init-map";
 import { CENTRO_COYOACAN } from "@/lib/mapbox-config";
-import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
+import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
 
 export type MapBarda = {
   id: string;
@@ -251,7 +251,7 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
             </p>
           <p>{selected.address}</p>
           <p>
-            {formatMetros(selected.altoMetros)} × {formatMetros(selected.anchoMetros)} = {formatArea(selected.areaM2)}
+            {formatArea(selected.areaM2)}
           </p>
           <p className="text-xs text-[var(--muted)]">{formatFechaHora(selected.createdAt)}</p>
           <Link className="font-medium text-[var(--magic)]" href={`/bardas/${selected.id}`}>
