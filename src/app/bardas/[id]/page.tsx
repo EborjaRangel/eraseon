@@ -55,11 +55,9 @@ export default async function BardaPage({ params }: Props) {
       </div>
 
       <section className="panel border-[var(--magic)] bg-violet-50 text-sm">
-        <p className="font-medium text-[var(--magic)]">Contador general</p>
-        <p className="mt-1 text-2xl font-semibold text-[var(--header)]">{formatMetros(general.lineales)} pintados</p>
-        <p className="text-[var(--muted)]">
-          Esta barda aporta {formatMetros(barda.anchoMetros)} y {formatArea(barda.areaM2)}. El total del proyecto es {formatArea(general.area)}.
-        </p>
+        <p className="font-medium text-[var(--magic)]">Metros cuadrados totales</p>
+        <p className="mt-1 text-2xl font-semibold text-[var(--header)]">{formatArea(general.area)}</p>
+        <p className="text-[var(--muted)]">Esta barda aporta {formatArea(barda.areaM2)}.</p>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-3">

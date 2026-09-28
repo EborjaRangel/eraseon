@@ -36,23 +36,19 @@ export default async function HomePage() {
       </div>
 
       <section className="panel border-[var(--magic)] bg-violet-50">
-        <p className="text-sm font-medium text-[var(--magic)]">Contador general de metros pintados</p>
+        <p className="text-sm font-medium text-[var(--magic)]">Metros cuadrados totales</p>
         <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">
-          {formatMetros(general.lineales)}
+          {formatArea(general.area)}
         </p>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          {formatArea(general.area)} de área · {general.bardas} {general.bardas === 1 ? "barda" : "bardas"}
+          {general.bardas} {general.bardas === 1 ? "barda" : "bardas"}
         </p>
       </section>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Registros</p>
           <p className="text-3xl font-semibold">{bardas.length}</p>
-        </article>
-        <article className="panel">
-          <p className="text-sm text-[var(--muted)]">Total de metros de todos los registros</p>
-          <p className="text-3xl font-semibold">{formatMetros(general.lineales)}</p>
         </article>
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Último registro</p>
