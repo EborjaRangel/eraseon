@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser, ownedBy } from "@/lib/session";
 import { contadorGeneral } from "@/lib/area";
-import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
+import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -40,16 +40,9 @@ export default async function HomePage() {
         <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">
           {formatArea(general.area)}
         </p>
-        <p className="mt-1 text-sm text-[var(--muted)]">
-          {general.bardas} {general.bardas === 1 ? "barda" : "bardas"}
-        </p>
       </section>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <article className="panel">
-          <p className="text-sm text-[var(--muted)]">Registros</p>
-          <p className="text-3xl font-semibold">{bardas.length}</p>
-        </article>
+      <div>
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Último registro</p>
           <p className="text-lg font-semibold">{bardas[0] ? formatFechaHora(bardas[0].createdAt) : "Aún no hay"}</p>
@@ -69,7 +62,7 @@ export default async function HomePage() {
                 <th className="px-4 py-3 font-medium">Usuario</th>
                 <th className="px-4 py-3 font-medium">Dirección</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
-                <th className="px-4 py-3 font-medium">Medidas</th>
+                <th className="px-4 py-3 font-medium">Metros cuadrados</th>
                 <th className="px-4 py-3 font-medium">Fecha</th>
                 <th className="px-4 py-3 font-medium">Fotos</th>
               </tr>
@@ -92,10 +85,7 @@ export default async function HomePage() {
                       {barda.tipo === "PRIVADA" ? "Privada" : "Pública"}
                       <p className="text-xs text-[var(--muted)]">Permiso {barda.permisoFirmado ? "sí" : "no"}</p>
                     </td>
-                    <td className="px-4 py-3">
-                      {formatMetros(barda.altoMetros)} × {formatMetros(barda.anchoMetros)}
-                      <p className="font-medium">{formatArea(barda.areaM2)}</p>
-                    </td>
+                    <td className="px-4 py-3 font-medium">{formatArea(barda.areaM2)}</td>
                     <td className="px-4 py-3">{formatFechaHora(barda.createdAt)}</td>
                     <td className="px-4 py-3">{antes}/5 antes · {despues}/5 después</td>
                   </tr>
