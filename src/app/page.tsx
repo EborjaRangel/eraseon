@@ -70,13 +70,13 @@ export default async function HomePage() {
             </colgroup>
             <thead className="bg-[var(--surface-2)] text-[var(--muted)]">
               <tr>
-                <th className="px-4 py-3 font-medium">Registro</th>
-                <th className="px-4 py-3 font-medium">Alto y ancho</th>
-                <th className="px-4 py-3 font-medium">Usuario</th>
-                <th className="px-4 py-3 font-medium">Dirección</th>
-                <th className="px-4 py-3 font-medium">Tipo</th>
-                <th className="px-4 py-3 font-medium">Fecha</th>
-                <th className="px-4 py-3 font-medium">Fotos</th>
+                <th className="px-3 py-2 font-medium">Registro</th>
+                <th className="px-3 py-2 font-medium">Alto y ancho</th>
+                <th className="px-3 py-2 font-medium">Usuario</th>
+                <th className="px-3 py-2 font-medium">Dirección</th>
+                <th className="px-3 py-2 font-medium">Tipo</th>
+                <th className="px-3 py-2 font-medium">Fecha</th>
+                <th className="px-3 py-2 font-medium">Fotos</th>
               </tr>
             </thead>
             <tbody>
@@ -87,35 +87,34 @@ export default async function HomePage() {
                   .sort((a, b) => a.slot - b.slot);
                 return (
                   <tr key={barda.id} className="border-t border-[var(--line)] align-top">
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <Link className="font-semibold text-[var(--magic)]" href={`/bardas/${barda.id}`}>
+                    <td className="whitespace-nowrap px-3 py-1.5">
+                      <Link className="font-semibold leading-tight text-[var(--magic)]" href={`/bardas/${barda.id}`}>
                         {formatRegistro(barda.consecutivo)}
                       </Link>
-                      <p className="text-xs text-[var(--muted)]">Globo {barda.consecutivo}</p>
-                      <p className="font-medium">{formatArea(barda.areaM2)}</p>
-                      <div className="mt-2 flex max-w-40 flex-wrap gap-1 whitespace-normal">
-                        {despuesFotos.length === 0 ? (
-                          <p className="text-xs text-[var(--muted)]">Sin fotos de después</p>
-                        ) : (
-                          despuesFotos.map((photo) => (
+                      <p className="text-xs leading-tight text-[var(--muted)]">
+                        Globo {barda.consecutivo} · {formatArea(barda.areaM2)}
+                      </p>
+                      {despuesFotos.length > 0 ? (
+                        <div className="mt-1 flex max-w-40 flex-wrap gap-0.5 whitespace-normal">
+                          {despuesFotos.map((photo) => (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img key={photo.id} src={photo.url} alt={`Después ${photo.slot}`} className="h-14 w-10 rounded object-cover" />
-                          ))
-                        )}
-                      </div>
+                            <img key={photo.id} src={photo.url} alt={`Después ${photo.slot}`} className="h-8 w-6 rounded object-cover" />
+                          ))}
+                        </div>
+                      ) : null}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">
+                    <td className="whitespace-nowrap px-3 py-1.5 leading-tight">
                       <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.altoMetros)} de alto</p>
                       <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.anchoMetros)} de ancho</p>
                     </td>
-                    <td className="px-4 py-3">{barda.createdBy.name}</td>
-                    <td className="px-4 py-3 leading-snug break-words">{barda.address}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-1.5">{barda.createdBy.name}</td>
+                    <td className="px-3 py-1.5 leading-tight break-words">{barda.address}</td>
+                    <td className="px-3 py-1.5 leading-tight">
                       {barda.tipo === "PRIVADA" ? "Privada" : "Pública"}
                       <p className="text-xs text-[var(--muted)]">Permiso {barda.permisoFirmado ? "sí" : "no"}</p>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">{formatFechaHora(barda.createdAt)}</td>
-                    <td className="px-4 py-3">{antes}/5 antes · {despuesFotos.length}/5 después</td>
+                    <td className="whitespace-nowrap px-3 py-1.5">{formatFechaHora(barda.createdAt)}</td>
+                    <td className="px-3 py-1.5">{antes}/5 antes · {despuesFotos.length}/5 después</td>
                   </tr>
                 );
               })}
