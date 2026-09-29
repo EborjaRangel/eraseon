@@ -13,7 +13,7 @@ export default async function HomePage() {
   const bardas = await prisma.barda.findMany({
     orderBy: { consecutivo: "desc" },
     include: {
-      photos: { select: { kind: true } },
+      photos: { select: { id: true, kind: true, slot: true, url: true } },
       createdBy: { select: { name: true } },
     },
   });
@@ -78,7 +78,9 @@ export default async function HomePage() {
             <tbody>
               {bardas.map((barda) => {
                 const antes = barda.photos.filter((photo) => photo.kind === "ANTES").length;
-                const despues = barda.photos.filter((photo) => photo.kind === "DESPUES").length;
+                const despuesFotos = barda.photos
+                  .filter((photo) => photo.kind === "DESPUES")
+                  .sort((a, b) => a.slot - b.slot);
                 return (
                   <tr key={barda.id} className="border-t border-[var(--line)] align-top">
                     <td className="whitespace-nowrap px-4 py-3">
@@ -87,6 +89,16 @@ export default async function HomePage() {
                       </Link>
                       <p className="text-xs text-[var(--muted)]">Globo {barda.consecutivo}</p>
                       <p className="font-medium">{formatArea(barda.areaM2)}</p>
+                      <div className="mt-2 flex max-w-40 flex-wrap gap-1 whitespace-normal">
+                        {despuesFotos.length === 0 ? (
+                          <p className="text-xs text-[var(--muted)]">Sin fotos de después</p>
+                        ) : (
+                          despuesFotos.map((photo) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img key={photo.id} src={photo.url} alt={`Después ${photo.slot}`} className="h-14 w-10 rounded object-cover" />
+                          ))
+                        )}
+                      </div>
                       <Link className="mt-1 inline-block text-xs font-semibold text-[var(--magic)]" href={`/bardas/${barda.id}/despues`}>
                         Después
                       </Link>
@@ -102,7 +114,7 @@ export default async function HomePage() {
                       <p className="text-xs text-[var(--muted)]">Permiso {barda.permisoFirmado ? "sí" : "no"}</p>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">{formatFechaHora(barda.createdAt)}</td>
-                    <td className="px-4 py-3">{antes}/5 antes · {despues}/5 después</td>
+                    <td className="px-4 py-3">{antes}/5 antes · {despuesFotos.length}/5 después</td>
                   </tr>
                 );
               })}
