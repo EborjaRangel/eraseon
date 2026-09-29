@@ -44,7 +44,8 @@ export default async function BardaPage({ params }: Props) {
           </p>
           <p className="text-sm text-[var(--muted)]">Registrada el {formatFechaHora(barda.createdAt)}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link className="btn-primary" href={`/bardas/${barda.id}/despues`}>Después y observación</Link>
           {user.role === "ADMIN" || barda.createdById === user.id ? (
             <Link className="btn-secondary" href={`/bardas/${barda.id}/editar`}>Editar</Link>
           ) : null}
@@ -80,7 +81,10 @@ export default async function BardaPage({ params }: Props) {
         </section>
       ) : null}
 
-      {barda.notes ? <section className="panel text-sm">{barda.notes}</section> : null}
+      <section className="panel">
+        <h2 className="section-title">Observación</h2>
+        <p className="mt-2 whitespace-pre-wrap text-sm">{barda.notes || "Sin observación."}</p>
+      </section>
 
       {antes.length + despues.length === 0 ? (
         <section className="panel text-sm">

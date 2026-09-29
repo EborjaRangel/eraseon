@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ownedBy, requireUser } from "@/lib/session";
+import { requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -8,7 +8,7 @@ export async function POST(request: Request, ctx: Ctx) {
   const { user, error } = await requireUser();
   if (error || !user) return error;
   const { id } = await ctx.params;
-  const barda = await prisma.barda.findFirst({ where: { id, ...ownedBy(user) } });
+  const barda = await prisma.barda.findFirst({ where: { id } });
   if (!barda) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
 
   const form = await request.formData();
@@ -21,6 +21,10 @@ export async function POST(request: Request, ctx: Ctx) {
   }
   if (kind !== "ANTES" && kind !== "DESPUES" && kind !== "PERMISO") {
     return NextResponse.json({ error: "El tipo de foto no es válido." }, { status: 400 });
+  }
+  const owns = user.role === "ADMIN" || barda.createdById === user.id;
+  if (!owns && kind !== "DESPUES") {
+    return NextResponse.json({ error: "Solo puedes cambiar las fotos de después." }, { status: 403 });
   }
   if (kind === "PERMISO") {
     if (!barda.permisoFirmado) {

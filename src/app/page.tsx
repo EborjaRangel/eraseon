@@ -87,6 +87,9 @@ export default async function HomePage() {
                       </Link>
                       <p className="text-xs text-[var(--muted)]">Globo {barda.consecutivo}</p>
                       <p className="font-medium">{formatArea(barda.areaM2)}</p>
+                      <Link className="mt-1 inline-block text-xs font-semibold text-[var(--magic)]" href={`/bardas/${barda.id}/despues`}>
+                        Después
+                      </Link>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.altoMetros)} de alto</p>

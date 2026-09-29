@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
 import { permisoFirmadoDe } from "@/lib/permiso";
-import { ownedBy, requireAdmin, requireUser } from "@/lib/session";
+import { requireAdmin, requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -27,12 +27,27 @@ export async function PATCH(request: Request, ctx: Ctx) {
   const { user, error } = await requireUser();
   if (error || !user) return error;
   const { id } = await ctx.params;
-  const current = await prisma.barda.findFirst({ where: { id, ...ownedBy(user) } });
+  const current = await prisma.barda.findFirst({ where: { id } });
   if (!current) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
 
   const body = await request.json().catch(() => null);
+  const owns = user.role === "ADMIN" || current.createdById === user.id;
+  if (!owns) {
+    const notes = body && Object.prototype.hasOwnProperty.call(body, "notes")
+      ? String(body.notes ?? "").trim()
+      : current.notes;
+    if (notes.length > 2000) {
+      return NextResponse.json({ error: "La observación puede tener hasta 2000 caracteres." }, { status: 400 });
+    }
+    const updated = await prisma.barda.update({ where: { id }, data: { notes } });
+    return NextResponse.json(updated);
+  }
+
   const address = String(body?.address ?? current.address).trim();
   const notes = String(body?.notes ?? current.notes).trim();
+  if (notes.length > 2000) {
+    return NextResponse.json({ error: "La observación puede tener hasta 2000 caracteres." }, { status: 400 });
+  }
   const tipo = body?.tipo === "PRIVADA" || body?.tipo === "PUBLICA" ? body.tipo : current.tipo;
   const permisoFirmado = permisoFirmadoDe(tipo, body?.permisoFirmado);
   const latitude = Number(body?.latitude ?? current.latitude);

@@ -303,7 +303,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         </div>
         {muestraPermiso ? <PermisoFoto preview={permisoPreview} onPick={(file) => onPick("PERMISO", 1, file)} /> : null}
         <div>
-          <label className="label" htmlFor="notes">Notas</label>
+          <label className="label" htmlFor="notes">Observación</label>
           <textarea id="notes" className="field mt-1 min-h-24" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
       </section>
