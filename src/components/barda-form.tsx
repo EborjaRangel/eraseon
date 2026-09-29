@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EraseMapLoader } from "@/components/erase-map-loader";
 import { PermisoFoto, PhotoSlots, type SlotPhoto } from "@/components/photo-slots";
@@ -10,6 +11,14 @@ import { formatArea, formatRegistro } from "@/lib/format";
 import { bardaSchema } from "@/lib/validations";
 
 const COYOACAN = { latitude: 19.3467, longitude: -99.1617 };
+
+type Cercana = {
+  id: string;
+  consecutivo: number;
+  address: string;
+  usuario: string;
+  metros: number;
+};
 
 type PhotoKind = "ANTES" | "DESPUES" | "PERMISO";
 type Draft = { kind: PhotoKind; slot: number; file: File; preview: string };
@@ -69,6 +78,8 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [revisarCercanas, setRevisarCercanas] = useState(false);
+  const [cercanas, setCercanas] = useState<Cercana[]>([]);
 
   useEffect(() => {
     if (mode !== "create") return;
@@ -91,6 +102,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition((position) => {
       setPoint({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+      setRevisarCercanas(true);
     });
   }, [mode, initial]);
 
@@ -105,6 +117,24 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     }, 400);
     return () => window.clearTimeout(timer);
   }, [point.latitude, point.longitude]);
+
+  useEffect(() => {
+    if (mode !== "create" || !revisarCercanas) {
+      setCercanas([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams({
+        lat: String(point.latitude),
+        lng: String(point.longitude),
+      });
+      void fetch(`/api/bardas/cerca?${params}`)
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data: Cercana[]) => setCercanas(Array.isArray(data) ? data : []))
+        .catch(() => setCercanas([]));
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [mode, revisarCercanas, point.latitude, point.longitude]);
 
   const altoN = Number(alto.replace(",", "."));
   const anchoN = Number(ancho.replace(",", "."));
@@ -192,6 +222,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setPoint({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+        setRevisarCercanas(true);
         setError(null);
       },
       () => setError("No se pudo leer el GPS. Coloca el globo en el mapa.")
@@ -274,10 +305,34 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
           </div>
           <button type="button" className="btn-secondary" onClick={useGps}>Usar mi ubicación</button>
         </div>
-        <EraseMapLoader pick={point} onPick={(latitude, longitude) => setPoint({ latitude, longitude })} heightClass="h-80" />
+        <EraseMapLoader
+          pick={point}
+          onPick={(latitude, longitude) => {
+            setPoint({ latitude, longitude });
+            setRevisarCercanas(true);
+          }}
+          heightClass="h-80"
+        />
         <p className="mt-2 text-xs text-[var(--muted)]">
           {point.latitude.toFixed(6)}, {point.longitude.toFixed(6)}
         </p>
+        {cercanas.length > 0 ? (
+          <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm">
+            <p className="font-medium text-amber-950">
+              Hay {cercanas.length === 1 ? "un levantamiento" : `${cercanas.length} levantamientos`} a 40 m o menos. Ábrelo para confirmar que no es la misma barda.
+            </p>
+            <ul className="mt-2 space-y-1">
+              {cercanas.map((cercana) => (
+                <li key={cercana.id}>
+                  <Link className="font-semibold text-[var(--magic)]" href={`/bardas/${cercana.id}`}>
+                    {formatRegistro(cercana.consecutivo)}
+                  </Link>
+                  {` · a ${cercana.metros} m · ${cercana.usuario} · ${cercana.address}`}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </section>
 
       <PhotoSlots

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
 import { contadorGeneral } from "@/lib/area";
-import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
+import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +61,7 @@ export default async function HomePage() {
                 <th className="px-4 py-3 font-medium">Usuario</th>
                 <th className="px-4 py-3 font-medium">Dirección</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
-                <th className="px-4 py-3 font-medium">Metros cuadrados</th>
+                <th className="px-4 py-3 font-medium">Medidas</th>
                 <th className="px-4 py-3 font-medium">Fecha</th>
                 <th className="px-4 py-3 font-medium">Fotos</th>
               </tr>
@@ -84,7 +84,11 @@ export default async function HomePage() {
                       {barda.tipo === "PRIVADA" ? "Privada" : "Pública"}
                       <p className="text-xs text-[var(--muted)]">Permiso {barda.permisoFirmado ? "sí" : "no"}</p>
                     </td>
-                    <td className="px-4 py-3 font-medium">{formatArea(barda.areaM2)}</td>
+                    <td className="px-4 py-3">
+                      <p>{formatMetros(barda.altoMetros)} de alto</p>
+                      <p>{formatMetros(barda.anchoMetros)} de ancho</p>
+                      <p className="font-medium">{formatArea(barda.areaM2)}</p>
+                    </td>
                     <td className="px-4 py-3">{formatFechaHora(barda.createdAt)}</td>
                     <td className="px-4 py-3">{antes}/5 antes · {despues}/5 después</td>
                   </tr>
