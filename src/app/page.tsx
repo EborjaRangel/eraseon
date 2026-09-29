@@ -54,22 +54,22 @@ export default async function HomePage() {
         </section>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-[var(--line)] bg-white">
-          <table className="w-full min-w-[62rem] table-fixed text-left text-sm">
+          <table className="w-full min-w-[72rem] table-fixed text-left text-sm">
             <colgroup>
               <col className="w-[10%]" />
-              <col className="w-[20%]" />
-              <col className="w-[12%]" />
-              <col className="w-[12%]" />
-              <col className="w-[10%]" />
-              <col className="w-[20%]" />
-              <col className="w-[16%]" />
+              <col className="w-[15%]" />
+              <col className="w-[11%]" />
+              <col className="w-[24%]" />
+              <col className="w-[9%]" />
+              <col className="w-[17%]" />
+              <col className="w-[14%]" />
             </colgroup>
             <thead className="bg-[var(--surface-2)] text-[var(--muted)]">
               <tr>
                 <th className="px-4 py-3 font-medium">Registro</th>
                 <th className="px-4 py-3 font-medium">Alto y ancho</th>
                 <th className="px-4 py-3 font-medium">Usuario</th>
-                <th className="px-3 py-3 text-xs font-medium">Dirección</th>
+                <th className="px-4 py-3 font-medium">Dirección</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Fecha</th>
                 <th className="px-4 py-3 font-medium">Fotos</th>
@@ -93,7 +93,7 @@ export default async function HomePage() {
                       <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.anchoMetros)} de ancho</p>
                     </td>
                     <td className="px-4 py-3">{barda.createdBy.name}</td>
-                    <td className="px-3 py-3 text-xs leading-snug break-words">{barda.address}</td>
+                    <td className="px-4 py-3 leading-snug break-words">{barda.address}</td>
                     <td className="px-4 py-3">
                       {barda.tipo === "PRIVADA" ? "Privada" : "Pública"}
                       <p className="text-xs text-[var(--muted)]">Permiso {barda.permisoFirmado ? "sí" : "no"}</p>
