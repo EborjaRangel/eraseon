@@ -103,9 +103,6 @@ export default async function HomePage() {
                           ))
                         )}
                       </div>
-                      <Link className="mt-1 inline-block text-xs font-semibold text-[var(--magic)]" href={`/bardas/${barda.id}/despues`}>
-                        Después
-                      </Link>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.altoMetros)} de alto</p>
