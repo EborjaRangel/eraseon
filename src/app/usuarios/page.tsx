@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { UsuarioBajaButton } from "@/components/usuario-baja-button";
 import { UsuarioForm } from "@/components/usuario-form";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
@@ -13,7 +14,7 @@ export default async function UsuariosPage() {
 
   const usuarios = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    select: { id: true, name: true, email: true, role: true, active: true, createdAt: true },
   });
 
   return (
@@ -21,7 +22,7 @@ export default async function UsuariosPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Usuarios</h1>
         <p className="text-sm text-[var(--muted)]">
-          Solo el admin da de alta cuentas. Un usuario entra con correo y contraseña, registra bardas y no puede borrar registros ni crear usuarios.
+          Solo el administrador da de alta usuarios, los da de baja y borra registros.
         </p>
       </div>
       <UsuarioForm />
@@ -33,6 +34,8 @@ export default async function UsuariosPage() {
               <th className="px-4 py-3 font-medium">Correo</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
               <th className="px-4 py-3 font-medium">Alta</th>
+              <th className="px-4 py-3 font-medium">Estado</th>
+              <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
           <tbody>
@@ -42,6 +45,12 @@ export default async function UsuariosPage() {
                 <td className="px-4 py-3">{cuenta.email}</td>
                 <td className="px-4 py-3">{cuenta.role === "ADMIN" ? "Admin" : "Usuario"}</td>
                 <td className="px-4 py-3">{formatFechaHora(cuenta.createdAt)}</td>
+                <td className="px-4 py-3">{cuenta.active ? "Activo" : "Baja"}</td>
+                <td className="px-4 py-3">
+                  {cuenta.id === user.id ? null : (
+                    <UsuarioBajaButton id={cuenta.id} name={cuenta.name} active={cuenta.active} />
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
