@@ -17,6 +17,13 @@ const display = Outfit({
 export const metadata: Metadata = {
   title: "EraseOn",
   description: "Registro de bardas con brocha mágica, fotos de antes y después, mapa y área.",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "256x256" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/icon.png", sizes: "256x256" }],
+  },
 };
 
 export const viewport: Viewport = {
