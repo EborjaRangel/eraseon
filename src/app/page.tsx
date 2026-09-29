@@ -53,7 +53,7 @@ export default async function HomePage() {
           Todavía no hay bardas. El primer globo del mapa será el consecutivo 1.
         </section>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white">
+        <div className="overflow-x-auto rounded-2xl border border-[var(--line)] bg-white">
           <table className="w-full text-left text-sm">
             <thead className="bg-[var(--surface-2)] text-[var(--muted)]">
               <tr>
@@ -61,7 +61,6 @@ export default async function HomePage() {
                 <th className="px-4 py-3 font-medium">Usuario</th>
                 <th className="px-4 py-3 font-medium">Dirección</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
-                <th className="px-4 py-3 font-medium">Medidas</th>
                 <th className="px-4 py-3 font-medium">Fecha</th>
                 <th className="px-4 py-3 font-medium">Fotos</th>
               </tr>
@@ -77,17 +76,15 @@ export default async function HomePage() {
                         {formatRegistro(barda.consecutivo)}
                       </Link>
                       <p className="text-xs text-[var(--muted)]">Globo {barda.consecutivo}</p>
+                      <p className="mt-1">{formatMetros(barda.altoMetros)} de alto</p>
+                      <p>{formatMetros(barda.anchoMetros)} de ancho</p>
+                      <p className="font-medium">{formatArea(barda.areaM2)}</p>
                     </td>
                     <td className="px-4 py-3">{barda.createdBy.name}</td>
                     <td className="px-4 py-3">{barda.address}</td>
                     <td className="px-4 py-3">
                       {barda.tipo === "PRIVADA" ? "Privada" : "Pública"}
                       <p className="text-xs text-[var(--muted)]">Permiso {barda.permisoFirmado ? "sí" : "no"}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p>{formatMetros(barda.altoMetros)} de alto</p>
-                      <p>{formatMetros(barda.anchoMetros)} de ancho</p>
-                      <p className="font-medium">{formatArea(barda.areaM2)}</p>
                     </td>
                     <td className="px-4 py-3">{formatFechaHora(barda.createdAt)}</td>
                     <td className="px-4 py-3">{antes}/5 antes · {despues}/5 después</td>

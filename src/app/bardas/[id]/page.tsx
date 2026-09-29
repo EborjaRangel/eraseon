@@ -4,7 +4,7 @@ import { DeleteBardaButton } from "@/components/delete-barda-button";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
-import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
+import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -52,9 +52,19 @@ export default async function BardaPage({ params }: Props) {
         </div>
       </div>
 
-      <section className="panel border-[var(--magic)] bg-violet-50 text-sm">
-        <p className="font-medium text-[var(--magic)]">Metros cuadrados</p>
-        <p className="mt-1 text-2xl font-semibold text-[var(--header)]">{formatArea(barda.areaM2)}</p>
+      <section className="grid gap-3 sm:grid-cols-3">
+        <article className="panel">
+          <p className="text-sm text-[var(--muted)]">Alto</p>
+          <p className="text-2xl font-semibold">{formatMetros(barda.altoMetros)}</p>
+        </article>
+        <article className="panel">
+          <p className="text-sm text-[var(--muted)]">Ancho</p>
+          <p className="text-2xl font-semibold">{formatMetros(barda.anchoMetros)}</p>
+        </article>
+        <article className="panel border-[var(--magic)] bg-violet-50">
+          <p className="text-sm font-medium text-[var(--magic)]">Metros cuadrados</p>
+          <p className="text-2xl font-semibold text-[var(--header)]">{formatArea(barda.areaM2)}</p>
+        </article>
       </section>
 
       {barda.permisoFirmado ? (
