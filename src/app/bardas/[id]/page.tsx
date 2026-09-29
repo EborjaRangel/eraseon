@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteBardaButton } from "@/components/delete-barda-button";
+import { ClickablePhoto, PhotoGallery } from "@/components/photo-gallery";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
@@ -73,8 +74,13 @@ export default async function BardaPage({ params }: Props) {
           <h2 className="section-title">Permiso firmado</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">Dueño o representante legal de la barda.</p>
           {permiso ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={permiso.url} alt="Permiso firmado" className="mt-3 max-h-96 rounded-xl object-contain" />
+            <ClickablePhoto
+              url={permiso.url}
+              filename={`${formatRegistro(barda.consecutivo)}-permiso.jpg`}
+              label="Permiso firmado"
+              className="mt-3"
+              imgClassName="max-h-96 rounded-xl object-contain"
+            />
           ) : (
             <p className="mt-3 text-sm">Aún no hay foto del permiso firmado.</p>
           )}
@@ -91,32 +97,8 @@ export default async function BardaPage({ params }: Props) {
           Este registro no tiene fotos guardadas. Entra a editar y vuelve a elegirlas desde la cámara o la galería.
         </section>
       ) : null}
-      <Gallery title="Antes" photos={antes} />
-      <Gallery title="Después" photos={despues} />
+      <PhotoGallery title="Antes" photos={antes} registro={formatRegistro(barda.consecutivo)} archivo="antes" />
+      <PhotoGallery title="Después" photos={despues} registro={formatRegistro(barda.consecutivo)} archivo="despues" />
     </div>
-  );
-}
-
-function Gallery({ title, photos }: { title: string; photos: Array<{ id: string; slot: number; url: string }> }) {
-  return (
-    <section className="panel">
-      <h2 className="section-title">{title}</h2>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-        {Array.from({ length: 5 }, (_, index) => {
-          const slot = index + 1;
-          const photo = photos.find((item) => item.slot === slot);
-          return (
-            <div key={slot} className="relative aspect-[3/4] overflow-hidden rounded-xl bg-[var(--surface-2)]">
-              {photo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photo.url} alt={`${title} ${slot}`} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full items-center justify-center text-xs text-[var(--muted)]">Foto {slot}</div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </section>
   );
 }
