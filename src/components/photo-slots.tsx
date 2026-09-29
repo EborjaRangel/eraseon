@@ -10,10 +10,11 @@ type Props = {
   kind: "ANTES" | "DESPUES";
   photos: SlotPhoto[];
   pending?: Record<number, string>;
+  disabled?: boolean;
   onPick: (kind: "ANTES" | "DESPUES", slot: number, file: File) => void;
 };
 
-export function PhotoSlots({ title, hint, kind, photos, pending = {}, onPick }: Props) {
+export function PhotoSlots({ title, hint, kind, photos, pending = {}, disabled = false, onPick }: Props) {
   return (
     <section className="panel">
       <h2 className="section-title">{title}</h2>
@@ -28,7 +29,8 @@ export function PhotoSlots({ title, hint, kind, photos, pending = {}, onPick }: 
               key={slot}
               slot={slot}
               preview={preview}
-              onFile={(file) => onPick(kind, slot, file)}
+              onFile={disabled ? undefined : (file) => onPick(kind, slot, file)}
+              disabled={disabled}
             />
           );
         })}
@@ -56,11 +58,13 @@ function Slot({
   preview,
   onFile,
   emptyLabel,
+  disabled = false,
 }: {
   slot: number;
   preview?: string;
-  onFile: (file: File) => void;
+  onFile?: (file: File) => void;
   emptyLabel?: string;
+  disabled?: boolean;
 }) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -78,10 +82,10 @@ function Slot({
         </span>
       </div>
       <div className="grid grid-cols-2 border-t border-[var(--line)] text-[11px] font-medium">
-        <button type="button" className="px-1 py-2 hover:bg-white" onClick={() => cameraRef.current?.click()}>
+        <button type="button" className="px-1 py-2 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40" onClick={() => cameraRef.current?.click()} disabled={disabled}>
           Cámara
         </button>
-        <button type="button" className="border-l border-[var(--line)] px-1 py-2 hover:bg-white" onClick={() => galleryRef.current?.click()}>
+        <button type="button" className="border-l border-[var(--line)] px-1 py-2 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40" onClick={() => galleryRef.current?.click()} disabled={disabled}>
           Galería
         </button>
       </div>
@@ -93,7 +97,7 @@ function Slot({
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];
-          if (file) onFile(file);
+          if (file && onFile) onFile(file);
           event.target.value = "";
         }}
       />
@@ -104,7 +108,7 @@ function Slot({
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0];
-          if (file) onFile(file);
+          if (file && onFile) onFile(file);
           event.target.value = "";
         }}
       />

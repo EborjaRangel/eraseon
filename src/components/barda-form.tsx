@@ -147,6 +147,13 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   }, [drafts]);
 
   async function onPick(kind: PhotoKind, slot: number, file: File) {
+    if (kind === "DESPUES") {
+      const hayAntes = antes.length > 0 || drafts.some((draft) => draft.kind === "ANTES");
+      if (!hayAntes) {
+        setError("Primero sube al menos una foto de antes.");
+        return;
+      }
+    }
     const preview = URL.createObjectURL(file);
     setDrafts((current) => {
       const previous = current.find((item) => item.kind === kind && item.slot === slot);
@@ -190,7 +197,10 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     }
     const id = data.id as string;
     const pidePermiso = tipo === "PRIVADA" || permisoFirmado;
-    const toUpload = pidePermiso ? drafts : drafts.filter((draft) => draft.kind !== "PERMISO");
+    const orden = { ANTES: 0, PERMISO: 1, DESPUES: 2 };
+    const toUpload = (pidePermiso ? drafts : drafts.filter((draft) => draft.kind !== "PERMISO")).sort(
+      (a, b) => orden[a.kind] - orden[b.kind]
+    );
     for (const draft of toUpload) {
       const etiqueta =
         draft.kind === "PERMISO" ? "del permiso firmado" : `${draft.slot} de ${draft.kind === "ANTES" ? "antes" : "después"}`;
@@ -234,6 +244,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const permisoGuardado = initial?.photos.find((photo) => photo.kind === "PERMISO")?.url;
   const permisoPreview = pending.PERMISO[1] ?? permisoGuardado;
   const muestraPermiso = tipo === "PRIVADA" || permisoFirmado;
+  const tieneAntes = antes.length > 0 || Object.keys(pending.ANTES).length > 0;
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -345,10 +356,11 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       />
       <PhotoSlots
         title="Después"
-        hint="Cinco fotos de la misma barda ya trabajada."
+        hint={tieneAntes ? "Cinco fotos de la misma barda ya trabajada." : "Primero sube al menos una foto de antes."}
         kind="DESPUES"
         photos={despues}
         pending={pending.DESPUES}
+        disabled={!tieneAntes}
         onPick={onPick}
       />
 

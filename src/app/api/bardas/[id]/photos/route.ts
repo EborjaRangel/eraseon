@@ -32,6 +32,12 @@ export async function POST(request: Request, ctx: Ctx) {
   } else if (!Number.isInteger(slot) || slot < 1 || slot > 5) {
     return NextResponse.json({ error: "La foto debe ir en un espacio del 1 al 5." }, { status: 400 });
   }
+  if (kind === "DESPUES") {
+    const antes = await prisma.photo.count({ where: { bardaId: id, kind: "ANTES" } });
+    if (antes < 1) {
+      return NextResponse.json({ error: "Primero sube al menos una foto de antes." }, { status: 400 });
+    }
+  }
 
   const bytes = Buffer.from(await file.arrayBuffer());
   if (bytes.byteLength > 8 * 1024 * 1024) {
