@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ownedBy, requireUser } from "@/lib/session";
+import { requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -9,7 +9,7 @@ export async function GET(_request: Request, ctx: Ctx) {
   if (error || !user) return error;
   const { id } = await ctx.params;
   const photo = await prisma.photo.findFirst({
-    where: { id, barda: ownedBy(user) },
+    where: { id },
     select: { data: true },
   });
   if (!photo) return NextResponse.json({ error: "No existe esa foto." }, { status: 404 });

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { DeleteBardaButton } from "@/components/delete-barda-button";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { currentUser, ownedBy } from "@/lib/session";
+import { currentUser } from "@/lib/session";
 import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export default async function BardaPage({ params }: Props) {
   if (!user) redirect("/login");
   const { id } = await params;
   const barda = await prisma.barda.findFirst({
-    where: { id, ...ownedBy(user) },
+    where: { id },
     include: {
       photos: {
         orderBy: { slot: "asc" },
@@ -45,7 +45,9 @@ export default async function BardaPage({ params }: Props) {
           <p className="text-sm text-[var(--muted)]">Registrada el {formatFechaHora(barda.createdAt)}</p>
         </div>
         <div className="flex gap-2">
-          <Link className="btn-secondary" href={`/bardas/${barda.id}/editar`}>Editar</Link>
+          {user.role === "ADMIN" || barda.createdById === user.id ? (
+            <Link className="btn-secondary" href={`/bardas/${barda.id}/editar`}>Editar</Link>
+          ) : null}
           {user.role === "ADMIN" ? <DeleteBardaButton id={barda.id} /> : null}
         </div>
       </div>

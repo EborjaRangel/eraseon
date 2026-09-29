@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { currentUser, ownedBy } from "@/lib/session";
+import { currentUser } from "@/lib/session";
 import { contadorGeneral } from "@/lib/area";
 import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
 
@@ -11,7 +11,6 @@ export default async function HomePage() {
   const user = await currentUser();
   if (!user) redirect("/login");
   const bardas = await prisma.barda.findMany({
-    where: ownedBy(user),
     orderBy: { consecutivo: "desc" },
     include: {
       photos: { select: { kind: true } },
@@ -29,7 +28,7 @@ export default async function HomePage() {
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Registros</h1>
           <p className="text-sm text-[var(--muted)]">
-            {user.role === "ADMIN" ? "Ves todas las bardas." : "Solo ves las bardas que tú registraste."}
+            Ves todos los levantamientos.
           </p>
         </div>
         <Link className="btn-primary" href="/bardas/nueva">Registrar barda</Link>

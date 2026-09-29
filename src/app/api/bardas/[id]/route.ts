@@ -11,7 +11,7 @@ export async function GET(_request: Request, ctx: Ctx) {
   if (error || !user) return error;
   const { id } = await ctx.params;
   const barda = await prisma.barda.findFirst({
-    where: { id, ...ownedBy(user) },
+    where: { id },
     include: {
       photos: {
         orderBy: [{ kind: "asc" }, { slot: "asc" }],

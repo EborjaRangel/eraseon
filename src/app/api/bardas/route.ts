@@ -3,13 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
 import { isUniqueConsecutivoError, nextConsecutivo } from "@/lib/consecutivo";
 import { permisoFirmadoDe } from "@/lib/permiso";
-import { ownedBy, requireUser } from "@/lib/session";
+import { requireUser } from "@/lib/session";
 
 export async function GET() {
   const { user, error } = await requireUser();
   if (error || !user) return error;
   const bardas = await prisma.barda.findMany({
-    where: ownedBy(user),
     orderBy: { consecutivo: "desc" },
     include: {
       photos: { select: { id: true, kind: true, slot: true, url: true } },
