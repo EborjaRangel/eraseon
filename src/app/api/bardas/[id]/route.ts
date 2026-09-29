@@ -31,8 +31,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
   if (!current) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
 
   const body = await request.json().catch(() => null);
-  const owns = user.role === "ADMIN" || current.createdById === user.id;
-  if (!owns) {
+  if (user.role !== "ADMIN") {
     const notes = body && Object.prototype.hasOwnProperty.call(body, "notes")
       ? String(body.notes ?? "").trim()
       : current.notes;

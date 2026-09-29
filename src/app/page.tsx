@@ -28,10 +28,14 @@ export default async function HomePage() {
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Registros</h1>
           <p className="text-sm text-[var(--muted)]">
-            Ves todos los levantamientos.
+            {user.role === "ADMIN"
+              ? "Ves todos los levantamientos."
+              : "Elige un registro para las fotos de después y la observación."}
           </p>
         </div>
-        <Link className="btn-primary" href="/bardas/nueva">Registrar barda</Link>
+        {user.role === "ADMIN" ? (
+          <Link className="btn-primary" href="/bardas/nueva">Registrar barda</Link>
+        ) : null}
       </div>
 
       <section className="panel border-[var(--magic)] bg-violet-50">

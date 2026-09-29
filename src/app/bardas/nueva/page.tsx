@@ -1,6 +1,11 @@
+import { redirect } from "next/navigation";
 import { BardaForm } from "@/components/barda-form";
+import { currentUser } from "@/lib/session";
 
-export default function NuevaBardaPage() {
+export default async function NuevaBardaPage() {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  if (user.role !== "ADMIN") redirect("/");
   return (
     <div className="space-y-4">
       <div>

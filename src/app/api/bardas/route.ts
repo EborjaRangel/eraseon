@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { areaM2, parseMeters } from "@/lib/area";
 import { isUniqueConsecutivoError, nextConsecutivo } from "@/lib/consecutivo";
 import { permisoFirmadoDe } from "@/lib/permiso";
-import { requireUser } from "@/lib/session";
+import { requireAdmin, requireUser } from "@/lib/session";
 
 export async function GET() {
   const { user, error } = await requireUser();
@@ -19,7 +19,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { user, error } = await requireUser();
+  const { user, error } = await requireAdmin();
   if (error || !user) return error;
   const body = await request.json().catch(() => null);
   const address = String(body?.address ?? "").trim();

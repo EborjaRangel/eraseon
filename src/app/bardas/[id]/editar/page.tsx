@@ -1,8 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { BardaForm } from "@/components/barda-form";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { currentUser, ownedBy } from "@/lib/session";
+import { currentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +11,9 @@ export default async function EditarBardaPage({ params }: Props) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
+  if (user.role !== "ADMIN") redirect(`/bardas/${id}/despues`);
   const barda = await prisma.barda.findFirst({
-    where: { id, ...ownedBy(user) },
+    where: { id },
     include: { photos: { select: { id: true, kind: true, slot: true, url: true } } },
   });
   if (!barda) notFound();

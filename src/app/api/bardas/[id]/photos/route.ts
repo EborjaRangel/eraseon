@@ -22,7 +22,7 @@ export async function POST(request: Request, ctx: Ctx) {
   if (kind !== "ANTES" && kind !== "DESPUES" && kind !== "PERMISO") {
     return NextResponse.json({ error: "El tipo de foto no es válido." }, { status: 400 });
   }
-  const owns = user.role === "ADMIN" || barda.createdById === user.id;
+  const owns = user.role === "ADMIN";
   if (!owns && kind !== "DESPUES") {
     return NextResponse.json({ error: "Solo puedes cambiar las fotos de después." }, { status: 403 });
   }
