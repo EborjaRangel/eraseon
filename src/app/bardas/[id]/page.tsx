@@ -91,8 +91,8 @@ export default async function BardaPage({ params }: Props) {
           Este registro no tiene fotos guardadas. Entra a editar y vuelve a elegirlas desde la cámara o la galería.
         </section>
       ) : null}
-      <Gallery title="Después" photos={despues} />
       <Gallery title="Antes" photos={antes} />
+      <Gallery title="Después" photos={despues} />
     </div>
   );
 }
