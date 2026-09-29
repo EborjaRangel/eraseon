@@ -76,8 +76,8 @@ export default async function HomePage() {
                         {formatRegistro(barda.consecutivo)}
                       </Link>
                       <p className="text-xs text-[var(--muted)]">Globo {barda.consecutivo}</p>
-                      <p className="mt-1">{formatMetros(barda.altoMetros)} de alto</p>
-                      <p>{formatMetros(barda.anchoMetros)} de ancho</p>
+                      <p className="mt-1 font-semibold text-[var(--magic)]">{formatMetros(barda.altoMetros)} de alto</p>
+                      <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.anchoMetros)} de ancho</p>
                       <p className="font-medium">{formatArea(barda.areaM2)}</p>
                     </td>
                     <td className="px-4 py-3">{barda.createdBy.name}</td>

@@ -55,11 +55,11 @@ export default async function BardaPage({ params }: Props) {
       <section className="grid gap-3 sm:grid-cols-3">
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Alto</p>
-          <p className="text-2xl font-semibold">{formatMetros(barda.altoMetros)}</p>
+          <p className="text-2xl font-semibold text-[var(--magic)]">{formatMetros(barda.altoMetros)}</p>
         </article>
         <article className="panel">
           <p className="text-sm text-[var(--muted)]">Ancho</p>
-          <p className="text-2xl font-semibold">{formatMetros(barda.anchoMetros)}</p>
+          <p className="text-2xl font-semibold text-[var(--magic)]">{formatMetros(barda.anchoMetros)}</p>
         </article>
         <article className="panel border-[var(--magic)] bg-violet-50">
           <p className="text-sm font-medium text-[var(--magic)]">Metros cuadrados</p>
