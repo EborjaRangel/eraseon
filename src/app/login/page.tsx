@@ -1,59 +1,94 @@
 "use client";
 
+import { useRef } from "react";
+import { Formik, type FormikHelpers } from "formik";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ValidationError } from "yup";
-import { loginSchema } from "@/lib/validations";
+import { loginSchema, yupToFormErrors } from "@/lib/validations";
+
+type LoginValues = {
+  email: string;
+  password: string;
+};
+
+async function enter(values: LoginValues, helpers: FormikHelpers<LoginValues>) {
+  const parsed = await loginSchema.validate(values);
+  const result = await signIn("credentials", {
+    email: parsed.email,
+    password: parsed.password,
+    redirect: false,
+  });
+  if (!result || result.error || result.ok === false) {
+    helpers.setStatus(
+      result?.error === "Inactiva"
+        ? "Esta cuenta está desactivada."
+        : result?.error && result.error !== "CredentialsSignin"
+          ? "No se pudo comprobar la cuenta. Intenta de nuevo."
+          : "Usuario o contraseña incorrectos."
+    );
+    return;
+  }
+  window.location.assign("/");
+}
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setError(null);
-    try {
-      await loginSchema.validate({ email, password });
-    } catch (err) {
-      setError(err instanceof ValidationError ? err.message : "Revisa los datos.");
-      return;
-    }
-    setBusy(true);
-    const result = await signIn("credentials", { email, password, redirect: false });
-    setBusy(false);
-    if (!result || result.error) {
-      setError("Correo o contraseña incorrectos.");
-      return;
-    }
-    router.push("/");
-    router.refresh();
-  }
+  const draft = useRef<LoginValues>({ email: "", password: "" });
 
   return (
-    <form onSubmit={onSubmit} className="panel space-y-4">
-      <div className="flex items-center gap-3">
-        <span className="brush-mark" aria-hidden="true" />
-        <div>
-          <h1 className="font-[family-name:var(--font-display)] text-2xl text-[var(--header)]">EraseOn</h1>
-          <p className="text-sm text-[var(--muted)]">Entra con tu usuario para registrar bardas.</p>
-        </div>
-      </div>
-      <div>
-        <label className="label" htmlFor="email">Correo</label>
-        <input id="email" type="email" autoComplete="username" className="field mt-1" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </div>
-      <div>
-        <label className="label" htmlFor="password">Contraseña</label>
-        <input id="password" type="password" autoComplete="current-password" className="field mt-1" value={password} onChange={(e) => setPassword(e.target.value)} />
-      </div>
-      {error ? <p className="error">{error}</p> : null}
-      <button className="btn-primary w-full" type="submit" disabled={busy}>
-        {busy ? "Entrando…" : "Entrar"}
-      </button>
-    </form>
+    <Formik<LoginValues>
+      initialValues={{ email: "", password: "" }}
+      validate={() => {
+        try {
+          loginSchema.validateSync(draft.current, { abortEarly: false });
+          return {};
+        } catch (error) {
+          return yupToFormErrors(error) ?? { email: "Revisa los datos." };
+        }
+      }}
+      onSubmit={async (_values, helpers) => {
+        helpers.setStatus(null);
+        try {
+          await enter(draft.current, helpers);
+        } catch {
+          helpers.setStatus("No se pudo iniciar sesión.");
+        }
+      }}
+    >
+      {({ errors, touched, isSubmitting, status, submitForm }) => (
+        <form
+          className="panel space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const data = new FormData(event.currentTarget);
+            draft.current = {
+              email: String(data.get("email") ?? ""),
+              password: String(data.get("password") ?? ""),
+            };
+            void submitForm();
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="brush-mark" aria-hidden="true" />
+            <div>
+              <h1 className="font-[family-name:var(--font-display)] text-2xl text-[var(--header)]">EraseOn</h1>
+              <p className="text-sm text-[var(--muted)]">Entra con tu usuario para registrar bardas.</p>
+            </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="email">Usuario</label>
+            <input id="email" name="email" type="text" autoComplete="username" autoCapitalize="none" className="field mt-1" placeholder="admin" />
+            {touched.email && errors.email ? <p className="error mt-1">{errors.email}</p> : null}
+          </div>
+          <div>
+            <label className="label" htmlFor="password">Contraseña</label>
+            <input id="password" name="password" type="password" autoComplete="current-password" className="field mt-1" />
+            {touched.password && errors.password ? <p className="error mt-1">{errors.password}</p> : null}
+          </div>
+          {typeof status === "string" && status ? <p className="error">{status}</p> : null}
+          <button className="btn-primary w-full" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Entrando…" : "Entrar"}
+          </button>
+        </form>
+      )}
+    </Formik>
   );
 }

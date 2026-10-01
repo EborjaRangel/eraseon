@@ -21,6 +21,12 @@ export default async function HomePage() {
     select: { anchoMetros: true, areaM2: true },
   });
   const general = contadorGeneral(todas);
+  const verdes = bardas.filter((barda) => {
+    const antes = barda.photos.some((photo) => photo.kind === "ANTES");
+    const despues = barda.photos.some((photo) => photo.kind === "DESPUES");
+    return antes && !despues;
+  }).length;
+  const morados = bardas.filter((barda) => barda.photos.some((photo) => photo.kind === "DESPUES")).length;
 
   return (
     <div className="space-y-6">
@@ -44,6 +50,21 @@ export default async function HomePage() {
           {formatArea(general.area)}
         </p>
       </section>
+
+      {user.role === "ADMIN" ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <article className="panel">
+            <p className="text-sm font-medium text-[#0f766e]">Registros en verde</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{verdes}</p>
+            <p className="text-sm text-[var(--muted)]">Ya tienen fotos de antes y todavía no tienen fotos de después.</p>
+          </article>
+          <article className="panel">
+            <p className="text-sm font-medium text-[#6d28d9]">Registros en morado</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{morados}</p>
+            <p className="text-sm text-[var(--muted)]">Ya tienen fotos de después.</p>
+          </article>
+        </div>
+      ) : null}
 
       <div>
         <article className="panel">
@@ -98,7 +119,7 @@ export default async function HomePage() {
                         <div className="mt-1 flex max-w-40 flex-wrap gap-0.5 whitespace-normal">
                           {despuesFotos.map((photo) => (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img key={photo.id} src={photo.url} alt={`Después ${photo.slot}`} className="h-8 w-6 rounded object-cover" />
+                            <img key={photo.id} src={photo.url} alt={`Después ${photo.slot}`} loading="lazy" className="h-8 w-6 rounded object-cover" />
                           ))}
                         </div>
                       ) : null}

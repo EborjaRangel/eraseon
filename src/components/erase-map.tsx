@@ -84,7 +84,7 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         if (cancelled) return;
         mapRef.current = map;
         setProvider(usedProvider);
-        if (usedProvider === "mapbox") setError(null);
+        setError(null);
         void showAlcaldiaCoyoacan(map, !onPickRef.current).finally(() => {
           if (!cancelled) setMapVersion((value) => value + 1);
         });

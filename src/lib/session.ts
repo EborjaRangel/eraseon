@@ -11,14 +11,19 @@ export type SessionUser = {
 };
 
 export async function currentUser(): Promise<SessionUser | null> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true, name: true, email: true, role: true, active: true },
-  });
-  if (!dbUser?.active) return null;
-  return { id: dbUser.id, name: dbUser.name, email: dbUser.email, role: dbUser.role };
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return null;
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true, role: true, active: true },
+    });
+    if (!dbUser?.active) return null;
+    return { id: dbUser.id, name: dbUser.name, email: dbUser.email, role: dbUser.role };
+  } catch (error) {
+    console.error("[session] no se pudo leer la cuenta", error);
+    return null;
+  }
 }
 
 export async function requireUser() {

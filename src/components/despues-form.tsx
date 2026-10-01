@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Formik } from "formik";
 import { useRouter } from "next/navigation";
 import { PhotoSlots, type SlotPhoto } from "@/components/photo-slots";
 import { formatRegistro } from "@/lib/format";
+import { observacionSchema } from "@/lib/validations";
 
 type Props = {
   bardaId: string;
@@ -37,7 +39,6 @@ async function compress(file: File): Promise<File> {
 
 export function DespuesForm({ bardaId, consecutivo, address, notes: initialNotes, tieneAntes, despues }: Props) {
   const router = useRouter();
-  const [notes, setNotes] = useState(initialNotes);
   const [drafts, setDrafts] = useState<Array<{ slot: number; file: File; preview: string }>>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -63,15 +64,15 @@ export function DespuesForm({ bardaId, consecutivo, address, notes: initialNotes
     setError(null);
   }
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  async function onSubmit(values: { notes: string }) {
+    const parsed = await observacionSchema.validate(values);
     setSaving(true);
     setError(null);
     setStatus("Guardando observación…");
     const response = await fetch(`/api/bardas/${bardaId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notes }),
+      body: JSON.stringify({ notes: parsed.notes }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -101,7 +102,9 @@ export function DespuesForm({ bardaId, consecutivo, address, notes: initialNotes
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <Formik initialValues={{ notes: initialNotes }} validationSchema={observacionSchema} onSubmit={onSubmit}>
+    {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
+    <form onSubmit={handleSubmit} className="space-y-4">
       <section className="panel">
         <p className="text-sm text-[var(--muted)]">{formatRegistro(consecutivo)}</p>
         <p className="mt-1">{address}</p>
@@ -114,12 +117,15 @@ export function DespuesForm({ bardaId, consecutivo, address, notes: initialNotes
         <label className="label" htmlFor="observacion">Observación</label>
         <textarea
           id="observacion"
+          name="notes"
           className="field mt-1 min-h-28"
           maxLength={2000}
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
+          value={values.notes}
+          onChange={handleChange}
+          onBlur={handleBlur}
           placeholder="Escribe lo que viste en la barda."
         />
+        {touched.notes && errors.notes ? <p className="error mt-1">{errors.notes}</p> : null}
       </section>
 
       <PhotoSlots
@@ -134,9 +140,11 @@ export function DespuesForm({ bardaId, consecutivo, address, notes: initialNotes
 
       {error ? <p className="error">{error}</p> : null}
       {status ? <p className="text-sm text-[var(--muted)]">{status}</p> : null}
-      <button className="btn-primary" type="submit" disabled={saving}>
-        {saving ? "Guardando…" : "Guardar cambios"}
+      <button className="btn-primary" type="submit" disabled={saving || isSubmitting}>
+        {saving || isSubmitting ? "Guardando…" : "Guardar cambios"}
       </button>
     </form>
+    )}
+    </Formik>
   );
 }

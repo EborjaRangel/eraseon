@@ -53,6 +53,9 @@ export async function initBasemap(options: InitOptions): Promise<() => void> {
     await import("maplibre-gl/dist/maplibre-gl.css");
     if (disposed) return;
 
+    // En el build de producción el worker que trae la librería no arranca.
+    maplibregl.setWorkerUrl("/vendor/maplibre/maplibre-gl-worker.js");
+
     const libreMap = new maplibregl.Map({
       container: options.container,
       style: FREE_MAP_STYLE,
@@ -69,6 +72,11 @@ export async function initBasemap(options: InitOptions): Promise<() => void> {
     };
     if (libreMap.isStyleLoaded()) ready();
     else libreMap.once("load", ready);
+    window.setTimeout(() => {
+      if (!disposed && !libreMap.isStyleLoaded()) {
+        options.onError?.("No se pudo cargar el mapa.");
+      }
+    }, 8000);
   }
 
   async function startMapbox() {
@@ -82,6 +90,7 @@ export async function initBasemap(options: InitOptions): Promise<() => void> {
     if (disposed) return;
 
     mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.workerUrl = "/vendor/mapbox/mapbox-gl-csp-worker.js";
 
     const boxMap = new mapboxgl.Map({
       container: options.container,
@@ -100,24 +109,18 @@ export async function initBasemap(options: InitOptions): Promise<() => void> {
       settled = true;
       options.onReady(boxMap as unknown as AnyMap, "mapbox");
     };
-    const failToLibre = (reason: string) => {
+    const failToLibre = () => {
       if (disposed || settled || usedFallback) return;
       settled = true;
-      options.onError?.(reason);
       void startMaplibre();
     };
 
     boxMap.once("load", succeed);
-    boxMap.once("error", (event) => {
-      const msg =
-        (event as { error?: { message?: string } }).error?.message ||
-        "No se pudieron cargar los tiles de Mapbox";
-      if (!boxMap.isStyleLoaded()) failToLibre(msg);
+    boxMap.once("error", () => {
+      if (!boxMap.isStyleLoaded()) failToLibre();
     });
     window.setTimeout(() => {
-      if (!disposed && !settled && !boxMap.isStyleLoaded()) {
-        failToLibre("Mapbox tardó demasiado; usando mapa alterno");
-      }
+      if (!disposed && !settled && !boxMap.isStyleLoaded()) failToLibre();
     }, 6000);
   }
 

@@ -37,6 +37,7 @@ yarn-error.log*
 /prisma/dev.db
 /prisma/dev.db-journal
 /public/uploads
+/public/vendor
 .vercel
 .railway
 

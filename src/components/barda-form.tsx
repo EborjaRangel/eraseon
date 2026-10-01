@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FormikProvider, useFormik } from "formik";
 import { EraseMapLoader } from "@/components/erase-map-loader";
 import { PermisoFoto, PhotoSlots, type SlotPhoto } from "@/components/photo-slots";
-import { ValidationError } from "yup";
 import { areaM2 } from "@/lib/area";
 import { formatArea, formatRegistro } from "@/lib/format";
-import { bardaSchema } from "@/lib/validations";
+import { bardaSchema, yupToFormErrors } from "@/lib/validations";
 
 const COYOACAN = { latitude: 19.3467, longitude: -99.1617 };
 
@@ -22,6 +22,15 @@ type Cercana = {
 
 type PhotoKind = "ANTES" | "DESPUES" | "PERMISO";
 type Draft = { kind: PhotoKind; slot: number; file: File; preview: string };
+
+type BardaValues = {
+  address: string;
+  notes: string;
+  tipo: "PUBLICA" | "PRIVADA";
+  permisoFirmado: boolean;
+  alto: string;
+  ancho: string;
+};
 
 type Props = {
   mode: "create" | "edit";
@@ -63,12 +72,6 @@ async function compress(file: File): Promise<File> {
 
 export function BardaForm({ mode, bardaId, initial }: Props) {
   const router = useRouter();
-  const [address, setAddress] = useState(initial?.address ?? "");
-  const [notes, setNotes] = useState(initial?.notes ?? "");
-  const [tipo, setTipo] = useState<"PUBLICA" | "PRIVADA">(initial?.tipo ?? "PUBLICA");
-  const [permisoFirmado, setPermisoFirmado] = useState(initial?.permisoFirmado ?? false);
-  const [alto, setAlto] = useState(initial ? String(initial.altoMetros) : "");
-  const [ancho, setAncho] = useState(initial ? String(initial.anchoMetros) : "");
   const [point, setPoint] = useState(
     initial ? { latitude: initial.latitude, longitude: initial.longitude } : COYOACAN
   );
@@ -80,6 +83,53 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const [saving, setSaving] = useState(false);
   const [revisarCercanas, setRevisarCercanas] = useState(false);
   const [cercanas, setCercanas] = useState<Cercana[]>([]);
+  const submitRef = useRef<(values: BardaValues) => Promise<void>>(async () => undefined);
+  const setFieldValueRef = useRef<(field: string, value: string) => void>(() => undefined);
+  const formik = useFormik<BardaValues>({
+    initialValues: {
+      address: initial?.address ?? "",
+      notes: initial?.notes ?? "",
+      tipo: initial?.tipo ?? "PUBLICA",
+      permisoFirmado: initial?.permisoFirmado ?? false,
+      alto: initial ? String(initial.altoMetros) : "",
+      ancho: initial ? String(initial.anchoMetros) : "",
+    },
+    enableReinitialize: true,
+    validate: (values) => {
+      try {
+        bardaSchema.validateSync(
+          {
+            address: values.address,
+            notes: values.notes,
+            tipo: values.tipo,
+            permisoFirmado: values.tipo === "PRIVADA" || values.permisoFirmado,
+            latitude: point.latitude,
+            longitude: point.longitude,
+            altoMetros: Number(values.alto.replace(",", ".")),
+            anchoMetros: Number(values.ancho.replace(",", ".")),
+          },
+          { abortEarly: false }
+        );
+        return {};
+      } catch (err) {
+        const mapped = yupToFormErrors(err) ?? {};
+        const errors: Record<string, string> = {};
+        for (const [key, message] of Object.entries(mapped)) {
+          const name = key === "altoMetros" ? "alto" : key === "anchoMetros" ? "ancho" : key;
+          if (name === "latitude" || name === "longitude") {
+            errors.address = errors.address ?? "Falta la ubicación.";
+          } else if (!errors[name]) {
+            errors[name] = message;
+          }
+        }
+        return errors;
+      }
+    },
+    onSubmit: (values) => submitRef.current(values),
+  });
+  setFieldValueRef.current = (field, value) => {
+    void formik.setFieldValue(field, value);
+  };
 
   useEffect(() => {
     if (mode !== "create") return;
@@ -111,7 +161,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       void fetch(`/api/geocode?lat=${point.latitude}&lng=${point.longitude}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data: { address?: string } | null) => {
-          if (data?.address) setAddress(data.address);
+          if (data?.address) void setFieldValueRef.current("address", data.address);
         })
         .catch(() => undefined);
     }, 400);
@@ -136,8 +186,9 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     return () => window.clearTimeout(timer);
   }, [mode, revisarCercanas, point.latitude, point.longitude]);
 
-  const altoN = Number(alto.replace(",", "."));
-  const anchoN = Number(ancho.replace(",", "."));
+  const { values } = formik;
+  const altoN = Number(values.alto.replace(",", "."));
+  const anchoN = Number(values.ancho.replace(",", "."));
   const area = Number.isFinite(altoN) && Number.isFinite(anchoN) && altoN > 0 && anchoN > 0 ? areaM2(altoN, anchoN) : null;
 
   const pending = useMemo(() => {
@@ -162,24 +213,17 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     });
   }
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  submitRef.current = async (formValues) => {
     const payload = {
-      address,
-      notes,
-      tipo,
-      permisoFirmado: tipo === "PRIVADA" || permisoFirmado,
+      address: formValues.address,
+      notes: formValues.notes,
+      tipo: formValues.tipo,
+      permisoFirmado: formValues.tipo === "PRIVADA" || formValues.permisoFirmado,
       latitude: point.latitude,
       longitude: point.longitude,
-      altoMetros: altoN,
-      anchoMetros: anchoN,
+      altoMetros: Number(formValues.alto.replace(",", ".")),
+      anchoMetros: Number(formValues.ancho.replace(",", ".")),
     };
-    try {
-      await bardaSchema.validate(payload);
-    } catch (err) {
-      setError(err instanceof ValidationError ? err.message : "Revisa los datos.");
-      return;
-    }
     setSaving(true);
     setError(null);
     setStatus("Guardando registro…");
@@ -196,7 +240,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       return;
     }
     const id = data.id as string;
-    const pidePermiso = tipo === "PRIVADA" || permisoFirmado;
+    const pidePermiso = formValues.tipo === "PRIVADA" || formValues.permisoFirmado;
     const orden = { ANTES: 0, PERMISO: 1, DESPUES: 2 };
     const toUpload = (pidePermiso ? drafts : drafts.filter((draft) => draft.kind !== "PERMISO")).sort(
       (a, b) => orden[a.kind] - orden[b.kind]
@@ -243,11 +287,12 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const despues = initial?.photos.filter((photo) => photo.kind === "DESPUES") ?? [];
   const permisoGuardado = initial?.photos.find((photo) => photo.kind === "PERMISO")?.url;
   const permisoPreview = pending.PERMISO[1] ?? permisoGuardado;
-  const muestraPermiso = tipo === "PRIVADA" || permisoFirmado;
+  const muestraPermiso = values.tipo === "PRIVADA" || values.permisoFirmado;
   const tieneAntes = antes.length > 0 || Object.keys(pending.ANTES).length > 0;
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <FormikProvider value={formik}>
+    <form onSubmit={formik.handleSubmit} className="space-y-4">
       <section className="panel">
         <p className="text-sm text-[var(--muted)]">Registro único</p>
         <p className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--magic)]">{registro}</p>
@@ -259,17 +304,20 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       <section className="panel space-y-4">
         <div>
           <label className="label" htmlFor="address">Dirección de la barda</label>
-          <input id="address" className="field mt-1" value={address} onChange={(e) => setAddress(e.target.value)} required />
+          <input id="address" name="address" className="field mt-1" value={values.address} onChange={formik.handleChange} onBlur={formik.handleBlur} required />
+          {formik.touched.address && formik.errors.address ? <p className="error mt-1">{formik.errors.address}</p> : null}
           <p className="mt-1 text-xs text-[var(--muted)]">Se actualiza al mover el globo en Mapbox.</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label className="label" htmlFor="alto">Alto (metros)</label>
-            <input id="alto" inputMode="decimal" className="field mt-1" value={alto} onChange={(e) => setAlto(e.target.value)} required />
+            <input id="alto" name="alto" inputMode="decimal" className="field mt-1" value={values.alto} onChange={formik.handleChange} onBlur={formik.handleBlur} required />
+            {formik.touched.alto && formik.errors.alto ? <p className="error mt-1">{formik.errors.alto}</p> : null}
           </div>
           <div>
             <label className="label" htmlFor="ancho">Ancho (metros)</label>
-            <input id="ancho" inputMode="decimal" className="field mt-1" value={ancho} onChange={(e) => setAncho(e.target.value)} required />
+            <input id="ancho" name="ancho" inputMode="decimal" className="field mt-1" value={values.ancho} onChange={formik.handleChange} onBlur={formik.handleBlur} required />
+            {formik.touched.ancho && formik.errors.ancho ? <p className="error mt-1">{formik.errors.ancho}</p> : null}
           </div>
           <div>
             <p className="label">Área</p>
@@ -281,19 +329,21 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="tipo">Tipo de barda</label>
-            <select id="tipo" className="field mt-1" value={tipo} onChange={(e) => setTipo(e.target.value as "PUBLICA" | "PRIVADA")}>
+            <select id="tipo" name="tipo" className="field mt-1" value={values.tipo} onChange={formik.handleChange} onBlur={formik.handleBlur}>
               <option value="PUBLICA">Barda pública</option>
               <option value="PRIVADA">Barda privada</option>
             </select>
           </div>
-          {tipo === "PUBLICA" ? (
+          {values.tipo === "PUBLICA" ? (
             <div>
               <label className="label" htmlFor="permiso">Permiso firmado</label>
               <select
                 id="permiso"
+                name="permisoFirmado"
                 className="field mt-1"
-                value={permisoFirmado ? "SI" : "NO"}
-                onChange={(e) => setPermisoFirmado(e.target.value === "SI")}
+                value={values.permisoFirmado ? "SI" : "NO"}
+                onChange={(e) => void formik.setFieldValue("permisoFirmado", e.target.value === "SI")}
+                onBlur={formik.handleBlur}
               >
                 <option value="NO">No</option>
                 <option value="SI">Sí</option>
@@ -304,7 +354,8 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         {muestraPermiso ? <PermisoFoto preview={permisoPreview} onPick={(file) => onPick("PERMISO", 1, file)} /> : null}
         <div>
           <label className="label" htmlFor="notes">Observación</label>
-          <textarea id="notes" className="field mt-1 min-h-24" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <textarea id="notes" name="notes" className="field mt-1 min-h-24" value={values.notes} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+          {formik.touched.notes && formik.errors.notes ? <p className="error mt-1">{formik.errors.notes}</p> : null}
         </div>
       </section>
 
@@ -366,9 +417,10 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
 
       {error ? <p className="error">{error}</p> : null}
       {status ? <p className="text-sm text-[var(--muted)]">{status}</p> : null}
-      <button className="btn-primary" type="submit" disabled={saving}>
-        {saving ? "Guardando…" : mode === "create" ? "Registrar barda" : "Guardar cambios"}
+      <button className="btn-primary" type="submit" disabled={saving || formik.isSubmitting}>
+        {saving || formik.isSubmitting ? "Guardando…" : mode === "create" ? "Registrar barda" : "Guardar cambios"}
       </button>
     </form>
+    </FormikProvider>
   );
 }
