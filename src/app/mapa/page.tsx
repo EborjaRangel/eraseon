@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { MapaFiltro } from "@/components/mapa-filtro";
-import { idsMayorArea } from "@/lib/area";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
 
@@ -13,7 +12,6 @@ export default async function MapaPage() {
     orderBy: { consecutivo: "asc" },
     include: { photos: { select: { kind: true } } },
   });
-  const rosa = idsMayorArea(bardas);
   const points = bardas.map((barda) => ({
     id: barda.id,
     consecutivo: barda.consecutivo,
@@ -28,7 +26,6 @@ export default async function MapaPage() {
     permisoFirmado: barda.permisoFirmado,
     antes: barda.photos.filter((photo) => photo.kind === "ANTES").length,
     despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
-    rosa: rosa.has(barda.id),
   }));
 
   return (
@@ -36,7 +33,7 @@ export default async function MapaPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Mapa de Coyoacán</h1>
         <p className="text-sm text-[var(--muted)]">
-          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Rosa: las 65 bardas con más metros cuadrados. Verde si ya hay fotos de antes, violeta si ya hay fotos de después y naranja si todavía no hay fotos.
+          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Verde si ya hay fotos de antes, violeta si ya hay fotos de después y naranja si todavía no hay fotos.
         </p>
       </div>
       <MapaFiltro bardas={points} />
