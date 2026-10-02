@@ -8,7 +8,7 @@ import { EraseMapLoader } from "@/components/erase-map-loader";
 import { PermisoFoto, PhotoSlots, type SlotPhoto } from "@/components/photo-slots";
 import { areaM2 } from "@/lib/area";
 import { formatArea, formatRegistro } from "@/lib/format";
-import { bardaSchema, yupToFormErrors } from "@/lib/validations";
+import { bardaEdicionSchema, bardaSchema, yupToFormErrors } from "@/lib/validations";
 
 const COYOACAN = { latitude: 19.3467, longitude: -99.1617 };
 
@@ -30,6 +30,7 @@ type BardaValues = {
   permisoFirmado: boolean;
   alto: string;
   ancho: string;
+  colorGlobo: "" | "ROSA" | "GRIS";
 };
 
 type Props = {
@@ -45,6 +46,7 @@ type Props = {
     altoMetros: number;
     anchoMetros: number;
     consecutivo: number;
+    colorGlobo?: "ROSA" | "GRIS" | null;
     photos: Array<SlotPhoto & { kind: PhotoKind }>;
   };
 };
@@ -93,11 +95,13 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       permisoFirmado: initial?.permisoFirmado ?? false,
       alto: initial ? String(initial.altoMetros) : "",
       ancho: initial ? String(initial.anchoMetros) : "",
+      colorGlobo: initial?.colorGlobo === "ROSA" || initial?.colorGlobo === "GRIS" ? initial.colorGlobo : "",
     },
     enableReinitialize: true,
     validate: (values) => {
       try {
-        bardaSchema.validateSync(
+        const schema = mode === "create" || initial?.colorGlobo ? bardaSchema : bardaEdicionSchema;
+        schema.validateSync(
           {
             address: values.address,
             notes: values.notes,
@@ -107,6 +111,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
             longitude: point.longitude,
             altoMetros: Number(values.alto.replace(",", ".")),
             anchoMetros: Number(values.ancho.replace(",", ".")),
+            colorGlobo: values.colorGlobo,
           },
           { abortEarly: false }
         );
@@ -223,6 +228,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       longitude: point.longitude,
       altoMetros: Number(formValues.alto.replace(",", ".")),
       anchoMetros: Number(formValues.ancho.replace(",", ".")),
+      colorGlobo: formValues.colorGlobo,
     };
     setSaving(true);
     setError(null);
@@ -325,6 +331,24 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
               {area == null ? "—" : formatArea(area)}
             </p>
           </div>
+        </div>
+        <div>
+          <label className="label" htmlFor="colorGlobo">Color del globo</label>
+          <select
+            id="colorGlobo"
+            name="colorGlobo"
+            className="field mt-1"
+            value={values.colorGlobo}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+          >
+            {mode === "create" || !initial?.colorGlobo ? <option value="">Elige el color</option> : null}
+            <option value="ROSA">Rosa</option>
+            <option value="GRIS">Gris Oxford</option>
+          </select>
+          {formik.touched.colorGlobo && formik.errors.colorGlobo ? (
+            <p className="error mt-1">{formik.errors.colorGlobo}</p>
+          ) : null}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>

@@ -23,6 +23,11 @@ enum TipoBarda {
   PRIVADA
 }
 
+enum ColorGlobo {
+  ROSA
+  GRIS
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -45,6 +50,7 @@ model Barda {
   areaM2      Float
   tipo           TipoBarda @default(PUBLICA)
   permisoFirmado Boolean   @default(false)
+  colorGlobo     ColorGlobo?
   notes          String    @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

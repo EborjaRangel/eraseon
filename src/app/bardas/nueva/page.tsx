@@ -10,7 +10,7 @@ export default async function NuevaBardaPage() {
     <div className="space-y-4">
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Nueva barda</h1>
-        <p className="text-sm text-[var(--muted)]">Mide alto y ancho, coloca el globo y sube hasta cinco fotos de antes y cinco de después.</p>
+        <p className="text-sm text-[var(--muted)]">Elige el color del globo, mide alto y ancho, coloca el punto y sube hasta cinco fotos de antes y cinco de después.</p>
       </div>
       <BardaForm mode="create" />
     </div>

@@ -30,6 +30,7 @@ export async function POST(request: Request) {
   const longitude = Number(body?.longitude);
   const altoMetros = parseMeters(body?.altoMetros);
   const anchoMetros = parseMeters(body?.anchoMetros);
+  const colorGlobo = body?.colorGlobo === "ROSA" || body?.colorGlobo === "GRIS" ? body.colorGlobo : null;
 
   if (address.length < 3) {
     return NextResponse.json({ error: "Escribe la dirección de la barda." }, { status: 400 });
@@ -39,6 +40,9 @@ export async function POST(request: Request) {
   }
   if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
     return NextResponse.json({ error: "Marca la ubicación en el mapa." }, { status: 400 });
+  }
+  if (colorGlobo == null) {
+    return NextResponse.json({ error: "Elige el color del globo: rosa o gris Oxford." }, { status: 400 });
   }
   if (altoMetros == null || anchoMetros == null) {
     return NextResponse.json(
@@ -63,6 +67,7 @@ export async function POST(request: Request) {
             altoMetros,
             anchoMetros,
             areaM2: areaM2(altoMetros, anchoMetros),
+            colorGlobo,
             createdById: user.id,
           },
         });

@@ -20,6 +20,17 @@ export const bardaSchema = yup.object({
     .positive("El ancho debe ser mayor a 0.")
     .max(500, "El ancho máximo es 500 m.")
     .required("Captura el ancho en metros."),
+  colorGlobo: yup
+    .string()
+    .oneOf(["ROSA", "GRIS"], "Elige el color del globo: rosa o gris Oxford.")
+    .required("Elige el color del globo: rosa o gris Oxford."),
+});
+
+export const bardaEdicionSchema = bardaSchema.shape({
+  colorGlobo: yup
+    .string()
+    .oneOf(["ROSA", "GRIS", ""], "Elige el color del globo: rosa o gris Oxford.")
+    .default(""),
 });
 
 export const usuarioSchema = yup.object({

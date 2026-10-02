@@ -18,8 +18,9 @@ export default async function MapaPage() {
     areaM2: barda.areaM2,
     consecutivo: barda.consecutivo,
     despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
+    colorGlobo: barda.colorGlobo,
   }));
-  const rosa = idsRosas(conFotos);
+  const rosa = idsRosas(conFotos.filter((barda) => barda.colorGlobo == null));
   const points = bardas.map((barda) => ({
     id: barda.id,
     consecutivo: barda.consecutivo,
@@ -34,7 +35,7 @@ export default async function MapaPage() {
     permisoFirmado: barda.permisoFirmado,
     antes: barda.photos.filter((photo) => photo.kind === "ANTES").length,
     despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
-    rosa: rosa.has(barda.id),
+    rosa: barda.colorGlobo === "ROSA" || (barda.colorGlobo == null && rosa.has(barda.id)),
   }));
 
   return (
@@ -42,7 +43,7 @@ export default async function MapaPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Mapa de Coyoacán</h1>
         <p className="text-sm text-[var(--muted)]">
-          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Rosa: 64 de las bardas moradas con más metros cuadrados. El globo 55 y el resto quedan en gris Oxford.
+          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Rosa: el color elegido al registrar, o las 64 bardas moradas de mayor metraje que aún no tienen color elegido. El globo 55 y el resto quedan en gris Oxford.
         </p>
       </div>
       <MapaFiltro bardas={points} />

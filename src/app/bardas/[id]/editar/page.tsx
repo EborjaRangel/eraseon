@@ -34,6 +34,7 @@ export default async function EditarBardaPage({ params }: Props) {
           altoMetros: barda.altoMetros,
           anchoMetros: barda.anchoMetros,
           consecutivo: barda.consecutivo,
+          colorGlobo: barda.colorGlobo,
           photos: barda.photos.map((photo) => ({
             kind: photo.kind,
             slot: photo.slot,

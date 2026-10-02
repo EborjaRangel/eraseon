@@ -53,7 +53,17 @@ export async function PATCH(request: Request, ctx: Ctx) {
   const longitude = Number(body?.longitude ?? current.longitude);
   const altoMetros = parseMeters(body?.altoMetros ?? current.altoMetros);
   const anchoMetros = parseMeters(body?.anchoMetros ?? current.anchoMetros);
+  const colorPedido = body?.colorGlobo;
+  const colorGlobo =
+    colorPedido === "ROSA" || colorPedido === "GRIS"
+      ? colorPedido
+      : colorPedido == null || colorPedido === ""
+        ? current.colorGlobo
+        : undefined;
 
+  if (colorGlobo === undefined) {
+    return NextResponse.json({ error: "Elige el color del globo: rosa o gris Oxford." }, { status: 400 });
+  }
   if (address.length < 3) {
     return NextResponse.json({ error: "Escribe la dirección de la barda." }, { status: 400 });
   }
@@ -77,6 +87,7 @@ export async function PATCH(request: Request, ctx: Ctx) {
         altoMetros,
         anchoMetros,
         areaM2: areaM2(altoMetros, anchoMetros),
+        colorGlobo,
       },
     });
     if (!permisoFirmado) {
