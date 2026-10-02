@@ -115,14 +115,6 @@ export default async function HomePage() {
                       <p className="text-xs leading-tight text-[var(--muted)]">
                         Globo {barda.consecutivo} · {formatArea(barda.areaM2)}
                       </p>
-                      {despuesFotos.length > 0 ? (
-                        <div className="mt-1 flex max-w-40 flex-wrap gap-0.5 whitespace-normal">
-                          {despuesFotos.map((photo) => (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img key={photo.id} src={photo.url} alt={`Después ${photo.slot}`} loading="lazy" className="h-8 w-6 rounded object-cover" />
-                          ))}
-                        </div>
-                      ) : null}
                     </td>
                     <td className="whitespace-nowrap px-3 py-1.5 leading-tight">
                       <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.altoMetros)} de alto</p>
