@@ -14,6 +14,20 @@ export function contadorGeneral(
   };
 }
 
+/** Las bardas moradas (con fotos de después) de mayor área. Las verdes no entran. */
+export function idsMoradasMayores(
+  bardas: Array<{ id: string; areaM2: number; consecutivo: number; despues: number }>,
+  limit = 65,
+): Set<string> {
+  return new Set(
+    bardas
+      .filter((barda) => barda.despues > 0)
+      .sort((a, b) => b.areaM2 - a.areaM2 || b.consecutivo - a.consecutivo)
+      .slice(0, limit)
+      .map((barda) => barda.id),
+  );
+}
+
 export function parseMeters(value: unknown): number | null {
   const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
   if (!Number.isFinite(n) || n <= 0 || n > 500) return null;
