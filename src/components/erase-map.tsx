@@ -191,13 +191,9 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
               const color =
                 pin.id === "pick"
                   ? "#0891b2"
-                  : pin.rosa && (pin.despues ?? 0) > 0
+                  : pin.rosa
                     ? "#ec4899"
-                    : (pin.despues ?? 0) > 0
-                      ? "#6d28d9"
-                      : (pin.antes ?? 0) > 0
-                        ? "#0f766e"
-                        : "#ea580c";
+                    : "#3d4450";
               const label = pin.consecutivo ?? "+";
               return (
                 <button

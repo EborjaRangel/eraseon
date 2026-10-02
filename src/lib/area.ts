@@ -14,16 +14,18 @@ export function contadorGeneral(
   };
 }
 
-/** Las bardas moradas (con fotos de después) de mayor área. Las verdes no entran. */
-export function idsMoradasMayores(
+/** Las bardas moradas (con fotos de después) de mayor área, sin el globo excluido. */
+export function idsRosas(
   bardas: Array<{ id: string; areaM2: number; consecutivo: number; despues: number }>,
   limit = 65,
+  exceptoConsecutivo = 55,
 ): Set<string> {
   return new Set(
     bardas
       .filter((barda) => barda.despues > 0)
       .sort((a, b) => b.areaM2 - a.areaM2 || b.consecutivo - a.consecutivo)
       .slice(0, limit)
+      .filter((barda) => barda.consecutivo !== exceptoConsecutivo)
       .map((barda) => barda.id),
   );
 }

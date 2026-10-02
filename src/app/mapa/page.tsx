@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { MapaFiltro } from "@/components/mapa-filtro";
-import { idsMoradasMayores } from "@/lib/area";
+import { idsRosas } from "@/lib/area";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
 
@@ -19,7 +19,7 @@ export default async function MapaPage() {
     consecutivo: barda.consecutivo,
     despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
   }));
-  const rosa = idsMoradasMayores(conFotos);
+  const rosa = idsRosas(conFotos);
   const points = bardas.map((barda) => ({
     id: barda.id,
     consecutivo: barda.consecutivo,
@@ -42,7 +42,7 @@ export default async function MapaPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Mapa de Coyoacán</h1>
         <p className="text-sm text-[var(--muted)]">
-          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Rosa: las 65 bardas moradas con más metros cuadrados. Las verdes no cambian. Violeta si ya hay fotos de después, verde si solo hay fotos de antes y naranja si todavía no hay fotos.
+          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Rosa: 64 de las bardas moradas con más metros cuadrados. El globo 55 y el resto quedan en gris Oxford.
         </p>
       </div>
       <MapaFiltro bardas={points} />
