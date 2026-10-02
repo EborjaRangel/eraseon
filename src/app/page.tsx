@@ -133,6 +133,11 @@ export default async function HomePage() {
                       <p className="text-xs leading-tight text-[var(--muted)]">
                         Globo {barda.consecutivo} · {formatArea(barda.areaM2)}
                       </p>
+                      {user.role === "USUARIO" ? (
+                        <Link className="btn-secondary mt-1 inline-flex px-2 py-1 text-xs" href={`/bardas/${barda.id}/despues`}>
+                          Después y observación
+                        </Link>
+                      ) : null}
                     </td>
                     <td className="whitespace-nowrap px-3 py-1.5 leading-tight">
                       <p className="font-semibold text-[var(--magic)]">{formatMetros(barda.altoMetros)} de alto</p>

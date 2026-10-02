@@ -77,7 +77,7 @@ export function DespuesForm({
     setError(null);
   }
 
-  async function subirDrafts() {
+  async function subirDrafts(): Promise<number> {
     const subidas: SlotPhoto[] = [];
     for (const draft of drafts) {
       setStatus(`Subiendo foto ${draft.slot} de después…`);
@@ -102,17 +102,41 @@ export function DespuesForm({
       });
       setDrafts([]);
     }
+    return subidas.length;
   }
 
   async function onSubmit(values: { notes: string }) {
     const parsed = await observacionSchema.validate(values);
+    if (esPintura && terminada && guardadas.length === 0 && drafts.length === 0) {
+      setError("Primero elige las fotos de después.");
+      return;
+    }
     setSaving(true);
     setError(null);
-    setStatus("Guardando observación…");
+    setStatus("Guardando fotos…");
+    let subidas = 0;
+    try {
+      subidas = await subirDrafts();
+    } catch (err) {
+      setSaving(false);
+      setStatus(null);
+      setError(err instanceof Error ? err.message : "Una foto de después no se subió.");
+      return;
+    }
+    if (esPintura && terminada && guardadas.length === 0 && subidas === 0) {
+      setSaving(false);
+      setStatus(null);
+      setError("Primero elige las fotos de después.");
+      return;
+    }
+    setStatus("Guardando cambios…");
     const response = await fetch(`/api/bardas/${bardaId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notes: parsed.notes }),
+      body: JSON.stringify({
+        notes: parsed.notes,
+        ...(esPintura ? { terminada } : {}),
+      }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -121,52 +145,8 @@ export function DespuesForm({
       setError(data.error ?? "No se pudo guardar la observación.");
       return;
     }
-    try {
-      await subirDrafts();
-    } catch (err) {
-      setSaving(false);
-      setStatus(null);
-      setError(err instanceof Error ? err.message : "La observación se guardó, pero una foto de después no se subió.");
-      return;
-    }
     router.push(`/bardas/${bardaId}`);
     router.refresh();
-  }
-
-  async function marcarTerminada(checked: boolean, notes: string) {
-    if (checked && guardadas.length === 0 && drafts.length === 0) {
-      setError("Primero elige las fotos de después.");
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    try {
-      if (checked) await subirDrafts();
-      setStatus(checked ? "Marcando la barda como terminada…" : "Actualizando la barda…");
-      const response = await fetch(`/api/bardas/${bardaId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes, terminada: checked }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setStatus(null);
-        setError(data.error ?? "No se pudo actualizar la barda.");
-        return;
-      }
-      setTerminada(checked);
-      setStatus(
-        checked
-          ? "Barda terminada. Si el globo era rosa quedó dorado; si era gris Oxford quedó naranja."
-          : "La barda volvió a su color de trabajo.",
-      );
-      router.refresh();
-    } catch (err) {
-      setStatus(null);
-      setError(err instanceof Error ? err.message : "No se pudo guardar.");
-    } finally {
-      setSaving(false);
-    }
   }
 
   return (
@@ -213,12 +193,12 @@ export function DespuesForm({
             type="checkbox"
             checked={terminada}
             disabled={saving || isSubmitting}
-            onChange={(event) => void marcarTerminada(event.target.checked, values.notes)}
+            onChange={(event) => setTerminada(event.target.checked)}
           />
           <span>
             <span className="font-semibold">Barda terminada</span>
             <span className="mt-1 block text-sm text-[var(--muted)]">
-              Al marcarlo, un globo rosa pasa a dorado y un globo gris Oxford pasa a naranja.
+              Al guardar los cambios, un globo rosa pasa a dorado y un globo gris Oxford pasa a naranja.
             </span>
           </span>
         </label>
