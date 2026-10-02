@@ -29,6 +29,8 @@ export default async function DespuesPage({ params }: Props) {
         address={barda.address}
         notes={barda.notes}
         tieneAntes={tieneAntes}
+        terminada={barda.terminada}
+        esPintura={user.role === "USUARIO"}
         despues={despues.map((photo) => ({ slot: photo.slot, url: photo.url }))}
       />
     </div>

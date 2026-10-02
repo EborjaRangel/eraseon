@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
-import { contadorGeneral } from "@/lib/area";
+import { contarColores, contadorGeneral } from "@/lib/area";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -21,12 +21,17 @@ export default async function HomePage() {
     select: { anchoMetros: true, areaM2: true },
   });
   const general = contadorGeneral(todas);
-  const verdes = bardas.filter((barda) => {
-    const antes = barda.photos.some((photo) => photo.kind === "ANTES");
-    const despues = barda.photos.some((photo) => photo.kind === "DESPUES");
-    return antes && !despues;
-  }).length;
-  const morados = bardas.filter((barda) => barda.photos.some((photo) => photo.kind === "DESPUES")).length;
+  const cuentas = contarColores(
+    bardas.map((barda) => ({
+      id: barda.id,
+      areaM2: barda.areaM2,
+      consecutivo: barda.consecutivo,
+      despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
+      colorGlobo: barda.colorGlobo,
+      terminada: barda.terminada,
+    })),
+  );
+  const sumaColores = cuentas.ROSA + cuentas.GRIS + cuentas.DORADO + cuentas.NARANJA;
 
   return (
     <div className="space-y-6">
@@ -52,16 +57,29 @@ export default async function HomePage() {
       </section>
 
       {user.role === "ADMIN" ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <article className="panel">
+              <p className="text-sm font-medium text-[#ec4899]">Registros en rosa</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{cuentas.ROSA}</p>
+            </article>
+            <article className="panel">
+              <p className="text-sm font-medium text-[#3d4450]">Registros en gris Oxford</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{cuentas.GRIS}</p>
+            </article>
+            <article className="panel">
+              <p className="text-sm font-medium text-[#b7950b]">Registros en dorado</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{cuentas.DORADO}</p>
+            </article>
+            <article className="panel">
+              <p className="text-sm font-medium text-[#ea580c]">Registros en naranja</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{cuentas.NARANJA}</p>
+            </article>
+          </div>
           <article className="panel">
-            <p className="text-sm font-medium text-[#0f766e]">Registros en verde</p>
-            <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{verdes}</p>
-            <p className="text-sm text-[var(--muted)]">Ya tienen fotos de antes y todavía no tienen fotos de después.</p>
-          </article>
-          <article className="panel">
-            <p className="text-sm font-medium text-[#6d28d9]">Registros en morado</p>
-            <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{morados}</p>
-            <p className="text-sm text-[var(--muted)]">Ya tienen fotos de después.</p>
+            <p className="text-sm font-medium text-[var(--header)]">Total de registros</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-4xl text-[var(--header)]">{sumaColores}</p>
+            <p className="text-sm text-[var(--muted)]">Suma de rosa, gris Oxford, dorado y naranja.</p>
           </article>
         </div>
       ) : null}

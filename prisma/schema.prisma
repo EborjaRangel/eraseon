@@ -51,6 +51,7 @@ model Barda {
   tipo           TipoBarda @default(PUBLICA)
   permisoFirmado Boolean   @default(false)
   colorGlobo     ColorGlobo?
+  terminada      Boolean   @default(false)
   notes          String    @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -38,7 +38,17 @@ export async function PATCH(request: Request, ctx: Ctx) {
     if (notes.length > 2000) {
       return NextResponse.json({ error: "La observación puede tener hasta 2000 caracteres." }, { status: 400 });
     }
-    const updated = await prisma.barda.update({ where: { id }, data: { notes } });
+    let terminada = current.terminada;
+    if (body && typeof body.terminada === "boolean") {
+      if (body.terminada) {
+        const despues = await prisma.photo.count({ where: { bardaId: id, kind: "DESPUES" } });
+        if (despues < 1) {
+          return NextResponse.json({ error: "Primero sube al menos una foto de después." }, { status: 400 });
+        }
+      }
+      terminada = body.terminada;
+    }
+    const updated = await prisma.barda.update({ where: { id }, data: { notes, terminada } });
     return NextResponse.json(updated);
   }
 

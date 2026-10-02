@@ -5,6 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { showAlcaldiaCoyoacan } from "@/lib/coyoacan-map";
 import { initBasemap, type AnyMap } from "@/lib/init-map";
 import { CENTRO_COYOACAN } from "@/lib/mapbox-config";
+import { COLOR_GLOBO, type ColorVisible } from "@/lib/area";
 import { formatArea, formatFechaHora, formatRegistro } from "@/lib/format";
 
 export type MapBarda = {
@@ -21,7 +22,7 @@ export type MapBarda = {
   permisoFirmado: boolean;
   antes: number;
   despues: number;
-  rosa?: boolean;
+  color?: ColorVisible;
 };
 
 type Pin = {
@@ -31,7 +32,7 @@ type Pin = {
   consecutivo?: number;
   antes?: number;
   despues?: number;
-  rosa?: boolean;
+  color?: ColorVisible;
 };
 
 type Props = {
@@ -68,7 +69,7 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         consecutivo: barda.consecutivo,
         antes: barda.antes,
         despues: barda.despues,
-        rosa: barda.rosa,
+        color: barda.color,
       }));
 
   const start = pick
@@ -188,12 +189,7 @@ export function EraseMap({ bardas = [], pick = null, onPick, heightClass = "h-[m
         <div ref={overlayRef} className="pointer-events-none absolute inset-0 z-[5] overflow-hidden">
           {mapVersion > 0 &&
             pins.map((pin) => {
-              const color =
-                pin.id === "pick"
-                  ? "#0891b2"
-                  : pin.rosa
-                    ? "#ec4899"
-                    : "#3d4450";
+              const color = pin.id === "pick" ? "#0891b2" : COLOR_GLOBO[pin.color ?? "GRIS"];
               const label = pin.consecutivo ?? "+";
               return (
                 <button

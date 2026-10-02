@@ -30,6 +30,42 @@ export function idsRosas(
   );
 }
 
+export type ColorVisible = "ROSA" | "GRIS" | "DORADO" | "NARANJA";
+
+export const COLOR_GLOBO: Record<ColorVisible, string> = {
+  ROSA: "#ec4899",
+  GRIS: "#3d4450",
+  DORADO: "#b7950b",
+  NARANJA: "#ea580c",
+};
+
+type BardaColor = {
+  id: string;
+  areaM2: number;
+  consecutivo: number;
+  despues: number;
+  colorGlobo: "ROSA" | "GRIS" | null;
+  terminada: boolean;
+};
+
+/** Rosa o gris de origen, y dorado o naranja si la barda ya está terminada. */
+export function coloresVisibles(bardas: BardaColor[]): Map<string, ColorVisible> {
+  const rosa = idsRosas(bardas.filter((barda) => barda.colorGlobo == null));
+  const colores = new Map<string, ColorVisible>();
+  for (const barda of bardas) {
+    const base: "ROSA" | "GRIS" =
+      barda.colorGlobo === "ROSA" || (barda.colorGlobo == null && rosa.has(barda.id)) ? "ROSA" : "GRIS";
+    colores.set(barda.id, barda.terminada ? (base === "ROSA" ? "DORADO" : "NARANJA") : base);
+  }
+  return colores;
+}
+
+export function contarColores(bardas: BardaColor[]) {
+  const cuentas = { ROSA: 0, GRIS: 0, DORADO: 0, NARANJA: 0 };
+  for (const color of coloresVisibles(bardas).values()) cuentas[color] += 1;
+  return cuentas;
+}
+
 export function parseMeters(value: unknown): number | null {
   const n = typeof value === "number" ? value : Number(String(value).replace(",", "."));
   if (!Number.isFinite(n) || n <= 0 || n > 500) return null;
