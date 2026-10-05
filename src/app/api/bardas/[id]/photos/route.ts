@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { despuesTerminada, SLOTS_DESPUES_TERMINAN } from "@/lib/area";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 
@@ -58,5 +59,14 @@ export async function POST(request: Request, ctx: Ctx) {
     data: { url: `/api/photos/${photo.id}` },
     select: { id: true, url: true, kind: true, slot: true, bardaId: true, createdAt: true },
   });
+  if (photoKind === "DESPUES" && (SLOTS_DESPUES_TERMINAN as readonly number[]).includes(slot)) {
+    const finales = await prisma.photo.findMany({
+      where: { bardaId: id, kind: "DESPUES", slot: { in: [...SLOTS_DESPUES_TERMINAN] } },
+      select: { slot: true },
+    });
+    if (despuesTerminada(finales.map((foto) => foto.slot))) {
+      await prisma.barda.update({ where: { id }, data: { terminada: true } });
+    }
+  }
   return NextResponse.json(saved);
 }

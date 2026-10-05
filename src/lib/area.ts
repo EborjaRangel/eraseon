@@ -30,6 +30,14 @@ export function idsRosas(
   );
 }
 
+/** Fotos de después que, al insertarse o reemplazarse, marcan la barda como terminada. */
+export const SLOTS_DESPUES_TERMINAN = [3, 4, 5] as const;
+
+export function despuesTerminada(slots: number[]): boolean {
+  const presentes = new Set(slots);
+  return SLOTS_DESPUES_TERMINAN.every((slot) => presentes.has(slot));
+}
+
 export type ColorVisible = "ROSA" | "GRIS" | "DORADO" | "NARANJA";
 
 export const COLOR_GLOBO: Record<ColorVisible, string> = {

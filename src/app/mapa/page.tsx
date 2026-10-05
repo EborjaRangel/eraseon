@@ -44,7 +44,7 @@ export default async function MapaPage() {
       <div>
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Mapa de Coyoacán</h1>
         <p className="text-sm text-[var(--muted)]">
-          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Rosa y gris Oxford son los colores de trabajo. Al marcar la barda terminada, el rosa pasa a dorado y el gris Oxford a naranja.
+          El mapa muestra la alcaldía Coyoacán. Cada globo lleva el número consecutivo. Rosa y gris Oxford son los colores de trabajo. Al guardar las fotos 3, 4 y 5 de después, el rosa pasa a dorado y el gris Oxford a naranja.
         </p>
       </div>
       <MapaFiltro bardas={points} />

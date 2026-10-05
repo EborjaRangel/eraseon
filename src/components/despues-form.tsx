@@ -13,8 +13,6 @@ type Props = {
   address: string;
   notes: string;
   tieneAntes: boolean;
-  terminada: boolean;
-  esPintura: boolean;
   despues: SlotPhoto[];
 };
 
@@ -45,14 +43,11 @@ export function DespuesForm({
   address,
   notes: initialNotes,
   tieneAntes,
-  terminada: terminadaInicial,
-  esPintura,
   despues,
 }: Props) {
   const router = useRouter();
   const [drafts, setDrafts] = useState<Array<{ slot: number; file: File; preview: string }>>([]);
   const [guardadas, setGuardadas] = useState(despues);
-  const [terminada, setTerminada] = useState(terminadaInicial);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -107,10 +102,6 @@ export function DespuesForm({
 
   async function onSubmit(values: { notes: string }) {
     const parsed = await observacionSchema.validate(values);
-    if (esPintura && terminada && guardadas.length === 0 && drafts.length === 0) {
-      setError("Primero elige las fotos de después.");
-      return;
-    }
     setSaving(true);
     setError(null);
     setStatus("Guardando fotos…");
@@ -123,20 +114,11 @@ export function DespuesForm({
       setError(err instanceof Error ? err.message : "Una foto de después no se subió.");
       return;
     }
-    if (esPintura && terminada && guardadas.length === 0 && subidas === 0) {
-      setSaving(false);
-      setStatus(null);
-      setError("Primero elige las fotos de después.");
-      return;
-    }
     setStatus("Guardando cambios…");
     const response = await fetch(`/api/bardas/${bardaId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        notes: parsed.notes,
-        ...(esPintura ? { terminada } : {}),
-      }),
+      body: JSON.stringify({ notes: parsed.notes }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -186,23 +168,9 @@ export function DespuesForm({
         onPick={(_kind, slot, file) => onPick(slot, file)}
       />
 
-      {esPintura && (guardadas.length > 0 || drafts.length > 0) ? (
-        <label className="panel flex items-start gap-3">
-          <input
-            className="mt-1 h-5 w-5"
-            type="checkbox"
-            checked={terminada}
-            disabled={saving || isSubmitting}
-            onChange={(event) => setTerminada(event.target.checked)}
-          />
-          <span>
-            <span className="font-semibold">Barda terminada</span>
-            <span className="mt-1 block text-sm text-[var(--muted)]">
-              Al guardar los cambios, un globo rosa pasa a dorado y un globo gris Oxford pasa a naranja.
-            </span>
-          </span>
-        </label>
-      ) : null}
+      <p className="text-sm text-[var(--muted)]">
+        Al guardar las fotos 3, 4 y 5 de después, ya sea nuevas, cambiadas o reemplazadas, un globo rosa pasa a dorado y un globo gris Oxford pasa a naranja.
+      </p>
 
       {error ? <p className="error">{error}</p> : null}
       {status ? <p className="text-sm text-[var(--muted)]">{status}</p> : null}
