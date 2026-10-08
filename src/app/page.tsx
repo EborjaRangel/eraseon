@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
-import { contarColores, contadorGeneral } from "@/lib/area";
+import { COLOR_GLOBO, coloresVisibles, contarColores, contadorGeneral } from "@/lib/area";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -21,16 +21,16 @@ export default async function HomePage() {
     select: { anchoMetros: true, areaM2: true },
   });
   const general = contadorGeneral(todas);
-  const cuentas = contarColores(
-    bardas.map((barda) => ({
-      id: barda.id,
-      areaM2: barda.areaM2,
-      consecutivo: barda.consecutivo,
-      despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
-      colorGlobo: barda.colorGlobo,
-      terminada: barda.terminada,
-    })),
-  );
+  const paraColores = bardas.map((barda) => ({
+    id: barda.id,
+    areaM2: barda.areaM2,
+    consecutivo: barda.consecutivo,
+    despues: barda.photos.filter((photo) => photo.kind === "DESPUES").length,
+    colorGlobo: barda.colorGlobo,
+    terminada: barda.terminada,
+  }));
+  const cuentas = contarColores(paraColores);
+  const colores = coloresVisibles(paraColores);
   const sumaColores = cuentas.ROSA + cuentas.GRIS + cuentas.DORADO + cuentas.NARANJA;
 
   return (
@@ -127,7 +127,11 @@ export default async function HomePage() {
                 return (
                   <tr key={barda.id} className="border-t border-[var(--line)] align-top">
                     <td className="whitespace-nowrap px-3 py-1.5">
-                      <Link className="font-semibold leading-tight text-[var(--magic)]" href={`/bardas/${barda.id}`}>
+                      <Link
+                        className="font-semibold leading-tight"
+                        style={{ color: COLOR_GLOBO[colores.get(barda.id) ?? "GRIS"] }}
+                        href={`/bardas/${barda.id}`}
+                      >
                         {formatRegistro(barda.consecutivo)}
                       </Link>
                       <p className="text-xs leading-tight text-[var(--muted)]">
