@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteBardaButton } from "@/components/delete-barda-button";
+import { ModificarRegistroButton } from "@/components/modificar-registro-button";
 import { ClickablePhoto, PhotoGallery } from "@/components/photo-gallery";
 import { redirect } from "next/navigation";
+import { coloresVisibles } from "@/lib/area";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
 import { formatArea, formatFechaHora, formatMetros, formatRegistro } from "@/lib/format";
@@ -26,6 +28,28 @@ export default async function BardaPage({ params }: Props) {
   });
   if (!barda) notFound();
 
+  const paraColores = await prisma.barda.findMany({
+    select: {
+      id: true,
+      areaM2: true,
+      consecutivo: true,
+      colorGlobo: true,
+      terminada: true,
+      photos: { where: { kind: "DESPUES" }, select: { id: true } },
+    },
+  });
+  const color = coloresVisibles(
+    paraColores.map((item) => ({
+      id: item.id,
+      areaM2: item.areaM2,
+      consecutivo: item.consecutivo,
+      despues: item.photos.length,
+      colorGlobo: item.colorGlobo,
+      terminada: item.terminada,
+    })),
+  ).get(barda.id);
+  const puedeModificar = user.role === "ADMIN" && (color === "ROSA" || color === "GRIS");
+
   const antes = barda.photos.filter((photo) => photo.kind === "ANTES");
   const despues = barda.photos.filter((photo) => photo.kind === "DESPUES");
   const permiso = barda.photos.find((photo) => photo.kind === "PERMISO");
@@ -47,7 +71,8 @@ export default async function BardaPage({ params }: Props) {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link className="btn-primary" href={`/bardas/${barda.id}/despues`}>Después y observación</Link>
-          {user.role === "ADMIN" ? (
+          {puedeModificar ? <ModificarRegistroButton id={barda.id} /> : null}
+          {user.role === "ADMIN" && !puedeModificar ? (
             <Link className="btn-secondary" href={`/bardas/${barda.id}/editar`}>Editar</Link>
           ) : null}
           {user.role === "ADMIN" ? <DeleteBardaButton id={barda.id} /> : null}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { despuesTerminada, SLOTS_DESPUES_TERMINAN } from "@/lib/area";
+import { coloresVisibles, despuesTerminada, SLOTS_DESPUES_TERMINAN } from "@/lib/area";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/session";
+import { requireAdmin, requireUser } from "@/lib/session";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -69,4 +69,41 @@ export async function POST(request: Request, ctx: Ctx) {
     }
   }
   return NextResponse.json(saved);
+}
+
+export async function DELETE(_request: Request, ctx: Ctx) {
+  const { user, error } = await requireAdmin();
+  if (error || !user) return error;
+  const { id } = await ctx.params;
+  const bardas = await prisma.barda.findMany({
+    select: {
+      id: true,
+      areaM2: true,
+      consecutivo: true,
+      colorGlobo: true,
+      terminada: true,
+      photos: { where: { kind: "DESPUES" }, select: { id: true } },
+    },
+  });
+  const color = coloresVisibles(
+    bardas.map((barda) => ({
+      id: barda.id,
+      areaM2: barda.areaM2,
+      consecutivo: barda.consecutivo,
+      despues: barda.photos.length,
+      colorGlobo: barda.colorGlobo,
+      terminada: barda.terminada,
+    })),
+  ).get(id);
+  if (!color) return NextResponse.json({ error: "No existe esa barda." }, { status: 404 });
+  if (color !== "ROSA" && color !== "GRIS") {
+    return NextResponse.json(
+      { error: "Solo se pueden modificar los registros en rosa o gris Oxford." },
+      { status: 400 },
+    );
+  }
+  const borradas = await prisma.photo.deleteMany({
+    where: { bardaId: id, kind: { in: ["ANTES", "DESPUES"] } },
+  });
+  return NextResponse.json({ ok: true, borradas: borradas.count });
 }

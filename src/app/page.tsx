@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ModificarRegistroButton } from "@/components/modificar-registro-button";
 import { prisma } from "@/lib/prisma";
 import { currentUser } from "@/lib/session";
 import { COLOR_GLOBO, coloresVisibles, contarColores, contadorGeneral } from "@/lib/area";
@@ -120,6 +121,7 @@ export default async function HomePage() {
             </thead>
             <tbody>
               {bardas.map((barda) => {
+                const color = colores.get(barda.id) ?? "GRIS";
                 const antes = barda.photos.filter((photo) => photo.kind === "ANTES").length;
                 const despuesFotos = barda.photos
                   .filter((photo) => photo.kind === "DESPUES")
@@ -129,7 +131,7 @@ export default async function HomePage() {
                     <td className="whitespace-nowrap px-3 py-1.5">
                       <Link
                         className="font-semibold leading-tight"
-                        style={{ color: COLOR_GLOBO[colores.get(barda.id) ?? "GRIS"] }}
+                        style={{ color: COLOR_GLOBO[color] }}
                         href={`/bardas/${barda.id}`}
                       >
                         {formatRegistro(barda.consecutivo)}
@@ -141,6 +143,9 @@ export default async function HomePage() {
                         <Link className="btn-secondary mt-1 inline-flex px-2 py-1 text-xs" href={`/bardas/${barda.id}/despues`}>
                           Después y observación
                         </Link>
+                      ) : null}
+                      {user.role === "ADMIN" && (color === "ROSA" || color === "GRIS") ? (
+                        <ModificarRegistroButton id={barda.id} compact />
                       ) : null}
                     </td>
                     <td className="whitespace-nowrap px-3 py-1.5 leading-tight">
