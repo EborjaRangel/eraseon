@@ -20,7 +20,7 @@ export default async function EditarBardaPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Editar barda</h1>
+      <h1 className="font-[family-name:var(--font-display)] text-3xl text-[var(--header)]">Modificar registro</h1>
       <BardaForm
         mode="edit"
         bardaId={barda.id}

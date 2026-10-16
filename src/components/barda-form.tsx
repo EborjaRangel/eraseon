@@ -78,7 +78,6 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     initial ? { latitude: initial.latitude, longitude: initial.longitude } : COYOACAN
   );
   const [registro, setRegistro] = useState(initial ? formatRegistro(initial.consecutivo) : "…");
-  const [consecutivo, setConsecutivo] = useState<number | null>(initial?.consecutivo ?? null);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -87,6 +86,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   const [cercanas, setCercanas] = useState<Cercana[]>([]);
   const submitRef = useRef<(values: BardaValues) => Promise<void>>(async () => undefined);
   const setFieldValueRef = useRef<(field: string, value: string) => void>(() => undefined);
+  const movioGlobo = useRef(false);
   const formik = useFormik<BardaValues>({
     initialValues: {
       address: initial?.address ?? "",
@@ -144,7 +144,6 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
       .then((data: { registro?: string; consecutivo?: number }) => {
         if (cancelled) return;
         if (data.registro) setRegistro(data.registro);
-        if (data.consecutivo) setConsecutivo(data.consecutivo);
       })
       .catch(() => undefined);
     return () => {
@@ -162,6 +161,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
   }, [mode, initial]);
 
   useEffect(() => {
+    if (mode === "edit" && !movioGlobo.current) return;
     const timer = window.setTimeout(() => {
       void fetch(`/api/geocode?lat=${point.latitude}&lng=${point.longitude}`)
         .then((res) => (res.ok ? res.json() : null))
@@ -171,7 +171,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         .catch(() => undefined);
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [point.latitude, point.longitude]);
+  }, [mode, point.latitude, point.longitude]);
 
   useEffect(() => {
     if (mode !== "create" || !revisarCercanas) {
@@ -281,6 +281,7 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     }
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        movioGlobo.current = true;
         setPoint({ latitude: position.coords.latitude, longitude: position.coords.longitude });
         setRevisarCercanas(true);
         setError(null);
@@ -300,10 +301,10 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
     <FormikProvider value={formik}>
     <form onSubmit={formik.handleSubmit} className="space-y-4">
       <section className="panel">
-        <p className="text-sm text-[var(--muted)]">Registro único</p>
-        <p className="font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--magic)]">{registro}</p>
+        <label className="label" htmlFor="folio">Folio</label>
+        <input id="folio" className="field mt-1" value={registro} readOnly />
         <p className="mt-1 text-sm text-[var(--muted)]">
-          El globo del mapa llevará el consecutivo {consecutivo ?? "—"}. La fecha y hora se guardan al registrar.
+          Este folio se conserva. Puedes cambiar el alto, el ancho, la dirección, la ubicación, el color, el tipo, la observación y las fotos.
         </p>
       </section>
 
@@ -387,13 +388,14 @@ export function BardaForm({ mode, bardaId, initial }: Props) {
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="section-title">Ubicación</h2>
-            <p className="text-sm text-[var(--muted)]">Al abrir el registro se usa el GPS del dispositivo. Mueve el globo si hay que corregir el punto.</p>
+            <p className="text-sm text-[var(--muted)]">Mueve el globo para cambiar el punto. La dirección se actualiza al moverlo.</p>
           </div>
           <button type="button" className="btn-secondary" onClick={useGps}>Usar mi ubicación</button>
         </div>
         <EraseMapLoader
           pick={point}
           onPick={(latitude, longitude) => {
+            movioGlobo.current = true;
             setPoint({ latitude, longitude });
             setRevisarCercanas(true);
           }}

@@ -8,7 +8,7 @@ export function ModificarRegistroButton({ id, compact = false }: { id: string; c
   const [busy, setBusy] = useState(false);
 
   async function onModificar() {
-    if (!window.confirm("Se borran las fotos de antes y de después. Luego puedes cambiar la ubicación, la dirección y subir fotos nuevas.")) {
+    if (!window.confirm("Se borran las fotos de antes y de después. El folio se conserva. Después puedes cambiar el alto, el ancho, la dirección, la ubicación y subir fotos nuevas.")) {
       return;
     }
     setBusy(true);
